@@ -1,3 +1,5 @@
+import { useState, useEffect, useCallback } from "react";
+import { supabase, isMockMode } from "@/lib/supabaseClient";
 import {
   mockDashboardSummary,
   mockRecommended,
@@ -10,49 +12,366 @@ import {
   mockWishlist,
 } from "@/lib/mock-data";
 
-type QueryResult<T> = { data: T; isLoading: false };
-type MutationResult = { mutate: (args: unknown, options?: { onSuccess?: (data: { reply: string }) => void }) => void; isPending: false };
+export function useGetDashboardSummary() {
+  const [data, setData] = useState(mockDashboardSummary);
+  const [isLoading, setIsLoading] = useState(true);
 
-function mockQuery<T>(data: T): QueryResult<T> {
-  return { data, isLoading: false };
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [
+          { count: foodsCount },
+          { count: attrCount },
+          { count: vendorCount },
+          { count: storyCount }
+        ] = await Promise.all([
+          supabase.from("foods").select("*", { count: "exact", head: true }),
+          supabase.from("attractions").select("*", { count: "exact", head: true }),
+          supabase.from("vendors").select("*", { count: "exact", head: true }),
+          supabase.from("cultural_stories").select("*", { count: "exact", head: true }),
+        ]);
+
+        setData({
+          totalFoods: foodsCount || mockDashboardSummary.totalFoods,
+          totalAttractions: attrCount || mockDashboardSummary.totalAttractions,
+          totalVendors: vendorCount || mockDashboardSummary.totalVendors,
+          totalStories: storyCount || mockDashboardSummary.totalStories,
+          totalExplorers: mockDashboardSummary.totalExplorers,
+        });
+      } catch (err) {
+        console.warn("Failed to fetch counts from Supabase:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCounts();
+  }, []);
+
+  return { data, isLoading };
 }
 
-export function useGetDashboardSummary(): QueryResult<typeof mockDashboardSummary> {
-  return mockQuery(mockDashboardSummary);
+export function useGetDashboardRecommended() {
+  const [data, setData] = useState(mockRecommended);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      try {
+        const { data: dbFoods } = await supabase.from("foods").select("*").limit(3);
+        const { data: dbAttractions } = await supabase.from("attractions").select("*").limit(2);
+        
+        if ((dbFoods && dbFoods.length > 0) || (dbAttractions && dbAttractions.length > 0)) {
+          const mappedFoods = (dbFoods || []).map(f => ({
+            id: `food_${f.id}`,
+            title: f.name,
+            type: "Food",
+            rating: Number(f.rating || 4.8),
+            subtitle: f.tagline || f.description || "",
+            imageUrl: f.image_url || f.imageUrl || "/images/logo.png",
+            location: f.location || "Varanasi",
+          }));
+          const mappedAttr = (dbAttractions || []).map(a => ({
+            id: `attr_${a.id}`,
+            title: a.name,
+            type: a.type || "Attraction",
+            rating: Number(a.rating || 4.9),
+            subtitle: a.description || a.sub || "",
+            imageUrl: a.image_url || a.imageUrl || "/images/logo.png",
+            location: a.location || "Varanasi",
+          }));
+          setData([...mappedFoods, ...mappedAttr]);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch recommended from Supabase:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchRecommended();
+  }, []);
+
+  return { data, isLoading };
 }
 
-export function useGetDashboardRecommended(): QueryResult<typeof mockRecommended> {
-  return mockQuery(mockRecommended);
+export function useGetCategories() {
+  return { data: mockCategories, isLoading: false };
 }
 
-export function useGetCategories(): QueryResult<typeof mockCategories> {
-  return mockQuery(mockCategories);
+export function useGetVendors(params?: { limit?: number }) {
+  const [data, setData] = useState<typeof mockVendors>(() => {
+    return isMockMode() ? (params?.limit ? mockVendors.slice(0, params.limit) : mockVendors) : [];
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        let query = supabase.from("vendors").select("*");
+        if (params?.limit) {
+          query = query.limit(params.limit);
+        }
+        const { data: dbData, error: dbError } = await query;
+        if (dbError) throw dbError;
+        if (dbData) {
+          const mapped = dbData.map(v => ({
+            id: String(v.id),
+            name: v.name || v.fullName || "",
+            specialty: v.specialty || "",
+            location: v.location || "",
+            rating: Number(v.rating || 4.7),
+            imageUrl: v.image_url || v.imageUrl || "/images/logo.png",
+            isVerified: !!v.is_verified || !!v.isVerified,
+          }));
+          setData(mapped);
+        } else {
+          setData([]);
+        }
+        setError(null);
+      } catch (err: any) {
+        console.error("Failed to fetch vendors from Supabase:", err);
+        if (isMockMode()) {
+          setData(params?.limit ? mockVendors.slice(0, params.limit) : mockVendors);
+        } else {
+          setError(err);
+          setData([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchVendors();
+  }, [params?.limit]);
+
+  return { data, isLoading, error };
 }
 
-export function useGetVendors(_params?: { limit?: number }): QueryResult<typeof mockVendors> {
-  const limit = _params?.limit;
-  const data = limit ? mockVendors.slice(0, limit) : mockVendors;
-  return mockQuery(data);
+export function useGetStories(params?: { limit?: number }) {
+  const [data, setData] = useState<any[]>(() => {
+    return isMockMode() ? (params?.limit ? mockStories.slice(0, params.limit) : mockStories) : [];
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        let query = supabase.from("cultural_stories").select("*");
+        if (params?.limit) {
+          query = query.limit(params.limit);
+        }
+        const { data: dbStories, error: dbError } = await query;
+        if (dbError) throw dbError;
+        if (dbStories) {
+          const mapped = dbStories.map(s => ({
+            id: String(s.id),
+            title: s.title,
+            category: s.category || "Mythology",
+            readTime: s.duration || s.read_time || s.readTime || "5 min read",
+            imageUrl: s.image_url || s.image || s.imageUrl || "/images/logo.png",
+            excerpt: s.description || s.content || s.excerpt || "",
+            audioUrl: s.audio_url || s.audioUrl || "",
+          }));
+          setData(mapped);
+        } else {
+          setData([]);
+        }
+        setError(null);
+      } catch (err: any) {
+        console.error("Failed to fetch stories from Supabase:", err);
+        if (isMockMode()) {
+          setData(params?.limit ? mockStories.slice(0, params.limit) : mockStories);
+        } else {
+          setError(err);
+          setData([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStories();
+  }, [params?.limit]);
+
+  return { data, isLoading, error };
 }
 
-export function useGetStories(_params?: { limit?: number }): QueryResult<typeof mockStories> {
-  const limit = _params?.limit;
-  const data = limit ? mockStories.slice(0, limit) : mockStories;
-  return mockQuery(data);
+export function useGetEvents(params?: { limit?: number }) {
+  const [data, setData] = useState<any[]>(() => {
+    return isMockMode() ? (params?.limit ? mockEvents.slice(0, params.limit) : mockEvents) : [];
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        let query = supabase.from("events").select("*");
+        if (params?.limit) {
+          query = query.limit(params.limit);
+        }
+        const { data: dbEvents, error: dbError } = await query;
+        if (dbError) throw dbError;
+        if (dbEvents) {
+          const mapped = dbEvents.map(e => ({
+            id: String(e.id),
+            name: e.title || e.name || "",
+            date: e.date || e.event_date || "",
+            status: e.status || "Upcoming",
+            description: e.tagline || e.description || "",
+            imageUrl: e.image_url || e.image || e.imageUrl || "/images/logo.png",
+            timing: e.timing || "Full Day",
+            location: e.location || "Varanasi",
+            spots: e.spots ? (typeof e.spots === "string" ? e.spots.split(",") : e.spots) : ["Assi Ghat"],
+            logistics: e.logistics || "Direct public transit options available.",
+            crowd: e.crowd || "Moderate"
+          }));
+          setData(mapped);
+        } else {
+          setData([]);
+        }
+        setError(null);
+      } catch (err: any) {
+        console.error("Failed to fetch events from Supabase:", err);
+        if (isMockMode()) {
+          setData(params?.limit ? mockEvents.slice(0, params.limit) : mockEvents);
+        } else {
+          setError(err);
+          setData([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [params?.limit]);
+
+  return { data, isLoading, error };
 }
 
-export function useGetEvents(_params?: { limit?: number }): QueryResult<typeof mockEvents> {
-  const limit = _params?.limit;
-  const data = limit ? mockEvents.slice(0, limit) : mockEvents;
-  return mockQuery(data);
+export const FOODS_FALLBACK = [
+  { name: "Tamatar Chaat", tagline: "The Iconic Street Delight", image: "/images/tamatar-chaat.png", rating: 4.8, price: 40, category: "Street Food", isVeg: true, spice: "Medium" },
+  { name: "Malaiyyo", tagline: "Winter's Royal Treat", image: "/images/malaiyoo.png", rating: 4.7, price: 60, category: "Winter Special", isVeg: true, spice: "Mild" },
+  { name: "Banarasi Lassi", tagline: "Rich, Creamy & Divine", image: "/images/banarasi-lassi.png", rating: 4.6, price: 35, category: "Beverages", isVeg: true, spice: "None" },
+  { name: "Kachori Sabzi", tagline: "Crispy & Spicy Breakfast", image: "/images/kachori-sabji.png", rating: 4.7, price: 30, category: "Breakfast", isVeg: true, spice: "Spicy" },
+  { name: "Rabri Jalebi", tagline: "Timeless Sweet Combo", image: "/images/jalebi-imarti.png", rating: 4.6, price: 50, category: "Sweets", isVeg: true, spice: "None" },
+  { name: "Banarasi Paan", tagline: "A Tradition of Taste", image: "/images/banarasi-paan.png", rating: 4.8, price: 20, category: "Specialty", isVeg: true, spice: "None" },
+  { name: "Kulfi Falooda", tagline: "Creamy Frozen Bliss", image: "/images/kulfi-falooda.png", rating: 4.5, price: 55, category: "Desserts", isVeg: true, spice: "None" },
+  { name: "Thandai", tagline: "Festival Drink of Kashi", image: "/images/thandai.png", rating: 4.7, price: 45, category: "Beverages", isVeg: true, spice: "Mild" },
+  { name: "Malpua Rabri", tagline: "Fried Sweet Pancakes", image: "/images/malpua-rabri.png", rating: 4.6, price: 65, category: "Sweets", isVeg: true, spice: "None" },
+  { name: "Rabdi", tagline: "Reduced Milk Dessert", image: "/images/rabdi.png", rating: 4.5, price: 40, category: "Sweets", isVeg: true, spice: "None" },
+];
+
+export const ATTRACTIONS_FALLBACK = [
+  { name: "Kashi Vishwanath Temple", sub: "One of the 12 Jyotirlingas of Lord Shiva", image: "/images/kashi-vishwanath-aerial.jpg", rating: 4.9, type: "Temple", timing: "4 AM – 11 PM", location: "Vishwanath Gali" },
+  { name: "Ganga Dwar", sub: "Grand entry corridor gates connecting Ganges to Temple", image: "/images/ganga-dwar.jpg", rating: 4.9, type: "Heritage", timing: "Open All Day", location: "Corridor Ghats" },
+  { name: "Assi Ghat", sub: "Peaceful riverside ghat for yoga & spirituality", image: "/images/assi-ghat-aarti.jpg", rating: 4.7, type: "Ghat", timing: "Open All Day", location: "Assi, Varanasi" },
+  { name: "Sarnath", sub: "Where Buddha gave his first sermon", image: "/images/sarnath.png", rating: 4.6, type: "Heritage", timing: "9 AM – 5 PM", location: "13 km from Varanasi" },
+  { name: "Dashashwamedh Ghat", sub: "Grand Ganga Aarti every evening", image: "/images/dashashwamedh-ghat-aarti.jpg", rating: 4.8, type: "Ghat", timing: "Open All Day", location: "Dashashwamedh, Varanasi" },
+  { name: "BHU Campus", sub: "One of Asia's largest residential universities", image: "/images/ghats-night.png", rating: 4.7, type: "Heritage", timing: "Campus hours", location: "Lanka, Varanasi" },
+  { name: "Kaal Bhairav Temple", sub: "The ancient guardian temple of Kotwal of Kashi", image: "/images/kaal-bhairav.png", rating: 4.8, type: "Temple", timing: "5 AM – 10 PM", location: "K45/3, Vishweshwarganj" },
+  { name: "Manikarnika Ghat", sub: "Most sacred cremation ground in Hinduism", image: "/images/manikarnika-ghat.png", rating: 4.8, type: "Ghat", timing: "Open All Day", location: "Manikarnika, Varanasi" },
+  { name: "Ramnagar Fort", sub: "18th century royal fort on the Ganges", image: "/images/ramnagar-fort.png", rating: 4.6, type: "Heritage", timing: "10 AM – 5 PM", location: "Ramnagar, Varanasi" },
+  { name: "Swarved Mahamandir", sub: "Grand multistory meditation temple", image: "/images/swarved-mahamandir.png", rating: 4.9, type: "Temple", timing: "6 AM – 7 PM", location: "Umaraha, Varanasi" },
+  { name: "Alaknanda Jetty", sub: "Luxury double-decker Ganga cruise boarding jetty", image: "/images/alaknanda-jetty.jpg", rating: 4.8, type: "Boat", timing: "5 AM – 9 PM", location: "Ravidas Ghat Jetty, Varanasi" },
+];
+
+export function useGetFoods() {
+  const [data, setData] = useState<any[]>(() => {
+    return isMockMode() ? FOODS_FALLBACK : [];
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchFoods = async () => {
+      try {
+        const { data: dbFoods, error: dbError } = await supabase.from("foods").select("*");
+        if (dbError) throw dbError;
+        if (dbFoods) {
+          const mapped = dbFoods.map(f => ({
+            name: f.name || "",
+            tagline: f.tagline || f.description || "",
+            image: f.image_url || f.imageUrl || "/images/logo.png",
+            rating: Number(f.rating || 4.7),
+            price: Number(f.price || 40),
+            category: f.category || "Street Food",
+            isVeg: f.is_veg !== false,
+            spice: f.spice || "Medium"
+          }));
+          setData(mapped);
+        } else {
+          setData([]);
+        }
+        setError(null);
+      } catch (err: any) {
+        console.error("Failed to fetch foods from Supabase:", err);
+        if (isMockMode()) {
+          setData(FOODS_FALLBACK);
+        } else {
+          setError(err);
+          setData([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchFoods();
+  }, []);
+
+  return { data, isLoading, error };
 }
 
-export function useGetUserJourney(): QueryResult<typeof mockUserJourney> {
-  return mockQuery(mockUserJourney);
+export function useGetAttractions() {
+  const [data, setData] = useState<any[]>(() => {
+    return isMockMode() ? ATTRACTIONS_FALLBACK : [];
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchAttractions = async () => {
+      try {
+        const { data: dbAttractions, error: dbError } = await supabase.from("attractions").select("*");
+        if (dbError) throw dbError;
+        if (dbAttractions) {
+          const mapped = dbAttractions.map(a => ({
+            name: a.name || "",
+            sub: a.description || a.sub || "",
+            image: a.image_url || a.image || "/images/logo.png",
+            rating: Number(a.rating || 4.8),
+            type: a.type || "Ghat",
+            timing: a.timing || "Open All Day",
+            location: a.location || "Varanasi"
+          }));
+          setData(mapped);
+        } else {
+          setData([]);
+        }
+        setError(null);
+      } catch (err: any) {
+        console.error("Failed to fetch attractions from Supabase:", err);
+        if (isMockMode()) {
+          setData(ATTRACTIONS_FALLBACK);
+        } else {
+          setError(err);
+          setData([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAttractions();
+  }, []);
+
+  return { data, isLoading, error };
 }
 
-export function useGetAiSuggestions(): QueryResult<typeof mockAiSuggestions> {
-  return mockQuery(mockAiSuggestions);
+export function useGetUserJourney() {
+  return { data: mockUserJourney, isLoading: false };
+}
+
+export function useGetAiSuggestions() {
+  return { data: mockAiSuggestions, isLoading: false };
 }
 
 export function useSendAiMessage() {
@@ -272,48 +591,213 @@ function getKashiAiReply(message: string): string {
   return "What a wonderful question! Kashi is a city where history, spirituality, and culture are woven together like silk threads. As your guide and friend, I'd suggest starting by exploring the **Explore Foods** or **Attractions** tab, or visiting the holy **Ghats** for a sunrise boat ride. Tell me more about what you're interested in—are you looking for specific travel tips, legends of local temples, or directions to the best lassi shop?";
 }
 
-import { useState, useEffect } from "react";
-
 export function useGetWishlist() {
-  const [items, setItems] = useState<typeof mockWishlist>(() => {
-    const stored = localStorage.getItem("kashi_wishlist");
-    if (stored) return JSON.parse(stored);
-    // Seed with mock data if not set yet
-    localStorage.setItem("kashi_wishlist", JSON.stringify(mockWishlist));
-    return mockWishlist;
-  });
+  const [items, setItems] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const handleStorage = () => {
+  const fetchWishlist = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        // Resolve profile ID from public.users
+        const { data: profile } = await supabase
+          .from("users")
+          .select("id")
+          .eq("auth_user_id", session.user.id)
+          .single();
+
+        if (profile?.id) {
+          let dbFavorites: any[] = [];
+          let dbWishlists: any[] = [];
+
+          // Query favorites (joining foods & attractions)
+          const { data: fData } = await supabase
+            .from("favorites")
+            .select(`
+              id,
+              food_id,
+              attraction_id,
+              foods (id, name, image_url, category),
+              attractions (id, name, image_url, type)
+            `)
+            .eq("user_id", profile.id);
+
+          if (fData) {
+            dbFavorites = fData.map((f: any) => {
+              if (f.foods) {
+                return {
+                  id: `food_${f.foods.id}`,
+                  title: f.foods.name,
+                  itemType: "Food",
+                  imageUrl: f.foods.image_url || "/images/logo.png"
+                };
+              } else if (f.attractions) {
+                return {
+                  id: `attr_${f.attractions.id}`,
+                  title: f.attractions.name,
+                  itemType: f.attractions.type || "Attraction",
+                  imageUrl: f.attractions.image_url || "/images/logo.png"
+                };
+              }
+              return null;
+            }).filter(Boolean);
+          }
+
+          // Query wishlists (joining vendors)
+          const { data: wData } = await supabase
+            .from("wishlists")
+            .select(`
+              id,
+              vendor_id,
+              vendors (id, name, image_url, specialty)
+            `)
+            .eq("user_id", profile.id);
+
+          if (wData) {
+            dbWishlists = wData.map((w: any) => {
+              if (w.vendors) {
+                return {
+                  id: `vendor_${w.vendors.id}`,
+                  title: w.vendors.name,
+                  itemType: "Vendor",
+                  imageUrl: w.vendors.image_url || "/images/logo.png"
+                };
+              }
+              return null;
+            }).filter(Boolean);
+          }
+
+          const combined = [...dbFavorites, ...dbWishlists];
+          setItems(combined);
+          localStorage.setItem("kashi_wishlist", JSON.stringify(combined));
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch wishlist from Supabase, using local fallback:", err);
+    }
+
+    try {
       const stored = localStorage.getItem("kashi_wishlist");
       if (stored) setItems(JSON.parse(stored));
-    };
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener("wishlist_changed", handleStorage);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("wishlist_changed", handleStorage);
-    };
+    } catch {}
+    setIsLoading(false);
   }, []);
 
-  return { data: items, isLoading: false };
+  useEffect(() => {
+    fetchWishlist();
+    window.addEventListener("wishlist_changed", fetchWishlist);
+    return () => {
+      window.removeEventListener("wishlist_changed", fetchWishlist);
+    };
+  }, [fetchWishlist]);
+
+  return { data: items, isLoading };
 }
 
-export function toggleWishlist(item: { id: string; title: string; itemType: string; imageUrl: string }) {
+export async function toggleWishlist(item: { id: string; title: string; itemType: string; imageUrl: string }) {
   const stored = localStorage.getItem("kashi_wishlist");
-  let list = stored ? JSON.parse(stored) : [...mockWishlist];
-  const exists = list.some((x: any) => x.title === item.title);
-  if (exists) {
+  let list = stored ? JSON.parse(stored) : [];
+  const existsLocal = list.some((x: any) => x.title === item.title);
+  if (existsLocal) {
     list = list.filter((x: any) => x.title !== item.title);
   } else {
     list.push(item);
   }
   localStorage.setItem("kashi_wishlist", JSON.stringify(list));
   window.dispatchEvent(new Event("wishlist_changed"));
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("id")
+        .eq("auth_user_id", session.user.id)
+        .single();
+      
+      if (!profile?.id) throw new Error("Profile not found.");
+
+      if (item.itemType === "Food") {
+        const { data: food } = await supabase
+          .from("foods")
+          .select("id")
+          .eq("name", item.title)
+          .single();
+        
+        if (food?.id) {
+          if (existsLocal) {
+            await supabase
+              .from("favorites")
+              .delete()
+              .eq("user_id", profile.id)
+              .eq("food_id", food.id);
+          } else {
+            await supabase
+              .from("favorites")
+              .insert({
+                user_id: profile.id,
+                food_id: food.id
+              });
+          }
+        }
+      } else if (item.itemType === "Vendor") {
+        const { data: vendor } = await supabase
+          .from("vendors")
+          .select("id")
+          .eq("name", item.title)
+          .single();
+        
+        if (vendor?.id) {
+          if (existsLocal) {
+            await supabase
+              .from("wishlists")
+              .delete()
+              .eq("user_id", profile.id)
+              .eq("vendor_id", vendor.id);
+          } else {
+            await supabase
+              .from("wishlists")
+              .insert({
+                user_id: profile.id,
+                vendor_id: vendor.id
+              });
+          }
+        }
+      } else {
+        const { data: attr } = await supabase
+          .from("attractions")
+          .select("id")
+          .eq("name", item.title)
+          .single();
+        
+        if (attr?.id) {
+          if (existsLocal) {
+            await supabase
+              .from("favorites")
+              .delete()
+              .eq("user_id", profile.id)
+              .eq("attraction_id", attr.id);
+          } else {
+            await supabase
+              .from("favorites")
+              .insert({
+                user_id: profile.id,
+                attraction_id: attr.id
+              });
+          }
+        }
+      }
+      window.dispatchEvent(new Event("wishlist_changed"));
+    }
+  } catch (err) {
+    console.warn("Failed to sync wishlist changes to Supabase:", err);
+  }
 }
 
 export function isWishlistItem(title: string): boolean {
   const stored = localStorage.getItem("kashi_wishlist");
-  const list = stored ? JSON.parse(stored) : mockWishlist;
+  const list = stored ? JSON.parse(stored) : [];
   return list.some((x: any) => x.title === title);
 }

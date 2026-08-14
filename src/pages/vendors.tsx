@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Star, MapPin, BadgeCheck } from "lucide-react";
 
 export default function Vendors() {
-  const { data: vendors, isLoading } = useGetVendors();
+  const { data: vendors = [], isLoading, error } = useGetVendors();
 
   return (
     <Layout>
@@ -13,7 +13,17 @@ export default function Vendors() {
         <h1 className="font-serif text-4xl font-bold mb-2 text-foreground">Local Vendors</h1>
         <p className="text-muted-foreground mb-8">Meet the artisans and culinary masters of Kashi.</p>
 
-        {isLoading ? (
+        {error ? (
+          <div className="text-center py-12 px-4 rounded-2xl bg-red-500/5 border border-red-500/10">
+            <p className="text-red-400 font-medium mb-3">Failed to load vendors</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 text-xs font-bold rounded-lg text-black bg-[#C9A227]"
+            >
+              Retry
+            </button>
+          </div>
+        ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Skeleton key={i} className="h-[140px] rounded-2xl" />

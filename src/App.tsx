@@ -11,6 +11,8 @@ import NotFound from "@/pages/not-found";
 const Login = lazy(() => import("@/pages/login"));
 const Signup = lazy(() => import("@/pages/signup"));
 const ForgotPassword = lazy(() => import("@/pages/forgot-password"));
+const AuthCallback = lazy(() => import("@/pages/auth-callback"));
+const VerifyEmail = lazy(() => import("@/pages/verify-email"));
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Foods = lazy(() => import("@/pages/foods"));
 const Attractions = lazy(() => import("@/pages/attractions"));
@@ -61,6 +63,8 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/auth/callback" component={AuthCallback} />
+        <Route path="/verify-email" component={VerifyEmail} />
 
         <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
         <Route path="/foods" component={() => <ProtectedRoute component={Foods} />} />

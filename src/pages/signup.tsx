@@ -36,6 +36,9 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [, navigate] = useLocation();
   const { register, isAuthenticated } = useAuth();
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -55,14 +58,28 @@ export default function Signup() {
   }
 
   async function onSubmit(data: SignupFormValues) {
-    await register({
-      fullName: data.fullName,
-      username: data.username,
-      email: data.email,
-      phone: data.phone,
-      password: data.password,
-    });
-    navigate("/");
+    setIsSubmitting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    try {
+      await register({
+        fullName: data.fullName,
+        username: data.username,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+      });
+      localStorage.setItem("kashi_pending_email", data.email);
+      setSuccessMsg("Account Created Successfully! Redirecting to email verification...");
+      setTimeout(() => {
+        navigate("/verify-email");
+      }, 1500);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || "Failed to create account. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -75,6 +92,18 @@ export default function Signup() {
           Create your account to explore the soul of Kashi.
         </p>
       </div>
+
+      {successMsg && (
+        <div className="bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2.5 rounded-xl text-xs mb-4 font-medium">
+          {successMsg}
+        </div>
+      )}
+
+      {errorMsg && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2.5 rounded-xl text-xs mb-4 font-medium animate-shake">
+          {errorMsg}
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -232,18 +261,18 @@ export default function Signup() {
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      className="border-white/20 mt-0.5 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                      className="border-white/20 mt-0.5 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 cursor-pointer"
                       data-testid="checkbox-terms"
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <label className="text-sm text-white/60 cursor-pointer" htmlFor={field.name}>
                       I agree to the{" "}
-                      <a href="#" className="text-amber-500 hover:underline">
+                      <a href="#" className="text-amber-500 hover:underline cursor-pointer">
                         Terms & Conditions
                       </a>{" "}
                       and{" "}
-                      <a href="#" className="text-amber-500 hover:underline">
+                      <a href="#" className="text-amber-500 hover:underline cursor-pointer">
                         Privacy Policy
                       </a>
                     </label>
@@ -258,7 +287,7 @@ export default function Signup() {
 
           <Button
             type="submit"
-            className="w-full h-12 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white border-0 shadow-lg shadow-amber-900/20 text-base flex items-center justify-center gap-2 group mt-6"
+            className="w-full h-12 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white border-0 shadow-lg shadow-amber-900/20 text-base flex items-center justify-center gap-2 group mt-6 cursor-pointer"
             data-testid="button-signup"
           >
             Create Account
@@ -279,7 +308,7 @@ export default function Signup() {
       <div className="mt-6">
         <Button
           variant="outline"
-          className="w-full bg-transparent border-white/10 hover:bg-white/5 hover:text-white h-11 flex items-center gap-3"
+          className="w-full bg-transparent border-white/10 hover:bg-white/5 hover:text-white h-11 flex items-center gap-3 cursor-pointer"
           data-testid="button-social-google"
         >
           <SiGoogle className="h-5 w-5" />
@@ -291,7 +320,7 @@ export default function Signup() {
         Already have an account?{" "}
         <Link
           href="/login"
-          className="text-amber-500 hover:text-amber-400 font-medium ml-1"
+          className="text-amber-500 hover:text-amber-400 font-medium ml-1 cursor-pointer"
           data-testid="link-login"
         >
           Login here

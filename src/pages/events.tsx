@@ -146,7 +146,7 @@ const FESTIVALS: FestivalDetail[] = [
 ];
 
 export default function Events() {
-  const { data: events, isLoading } = useGetEvents();
+  const { data: events = [], isLoading, error } = useGetEvents();
   const [activeTab, setActiveTab] = useState<"upcoming" | "guide">("upcoming");
   const [selectedFestival, setSelectedFestival] = useState<FestivalDetail | null>(null);
 
@@ -216,7 +216,17 @@ export default function Events() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              {isLoading ? (
+              {error ? (
+                <div className="text-center py-12 px-4 rounded-3xl bg-red-500/5 border border-red-500/10">
+                  <p className="text-red-400 font-medium mb-3">Failed to load upcoming events</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-4 py-2 text-xs font-bold rounded-lg text-black bg-[#C9A227]"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[1, 2, 3, 4].map((i) => (
                     <Skeleton key={i} className="h-[280px] rounded-2xl" />

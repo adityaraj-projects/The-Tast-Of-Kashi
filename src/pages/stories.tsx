@@ -73,7 +73,7 @@ const STORY_CONTENTS: Record<string, string> = {
 const CATEGORIES = ["All", "Mythology", "Culture", "Travel", "Food", "Spirituality"];
 
 export default function Stories() {
-  const { data: stories, isLoading } = useGetStories();
+  const { data: stories = [], isLoading, error } = useGetStories();
   const [activeTab, setActiveTab] = useState<"stories" | "gallery">("stories");
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [zoomScale, setZoomScale] = useState(1);
@@ -169,7 +169,17 @@ export default function Stories() {
                 ))}
               </div>
 
-              {isLoading ? (
+              {error ? (
+                <div className="text-center py-12 px-4 rounded-3xl bg-red-500/5 border border-red-500/10">
+                  <p className="text-red-400 font-medium mb-3">Failed to load spiritual legends</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-4 py-2 text-xs font-bold rounded-lg text-black bg-[#C9A227]"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[1, 2, 3, 4].map((i) => (
                     <Skeleton key={i} className="h-[240px] rounded-2xl" />
