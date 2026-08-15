@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, MapPin, ArrowRight, BookOpen, Clock, AlertTriangle, 
-  Map, Sparkles, ChevronRight, X, Info, Flame, Eye, Landmark
+  Map, Sparkles, ChevronRight, X, Info, Flame, Eye, Landmark, Check
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -149,6 +149,24 @@ export default function Events() {
   const { data: events = [], isLoading, error } = useGetEvents();
   const [activeTab, setActiveTab] = useState<"upcoming" | "guide">("upcoming");
   const [selectedFestival, setSelectedFestival] = useState<FestivalDetail | null>(null);
+
+  // Live LocalStorage Booking State
+  const [bookings, setBookings] = useState<string[]>(() => {
+    const stored = localStorage.getItem("kashi_event_bookings");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  const handleBookEvent = (id: string) => {
+    const updated = [...bookings, id];
+    setBookings(updated);
+    localStorage.setItem("kashi_event_bookings", JSON.stringify(updated));
+  };
+
+  const handleCancelBooking = (id: string) => {
+    const updated = bookings.filter(b => b !== id);
+    setBookings(updated);
+    localStorage.setItem("kashi_event_bookings", JSON.stringify(updated));
+  };
 
   const handleEventClick = (event: any) => {
     const found = FESTIVALS.find(f => f.name.toLowerCase().includes(event.name.toLowerCase()) || event.name.toLowerCase().includes(f.name.toLowerCase()));
@@ -430,6 +448,43 @@ export default function Events() {
                         ))}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Premium Booking Registry Component */}
+                  <div className="pt-4 border-t border-[#C9A227]/15 text-left space-y-3">
+                    <span className="text-[10px] uppercase font-bold text-primary flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-primary" /> Event Pass Registration
+                    </span>
+                    
+                    {bookings.includes(selectedFestival.id) ? (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-green-500/10 border border-green-500/35 text-white/90">
+                        <div>
+                          <p className="text-xs font-bold text-green-400 flex items-center gap-1.5">
+                            <Check className="w-4 h-4" /> Pass Confirmed
+                          </p>
+                          <p className="text-[10px] text-white/60 mt-0.5">Your e-pass and VIP entry details have been sent to your registered profile.</p>
+                        </div>
+                        <button
+                          onClick={() => handleCancelBooking(selectedFestival.id)}
+                          className="px-3.5 py-1.5 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/25 text-red-400 text-[10.5px] font-bold cursor-pointer transition-all"
+                        >
+                          Cancel Booking
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-black/45 border border-white/5">
+                        <div className="text-left">
+                          <p className="text-xs font-bold text-white">Varanasi Pilgrim Pass</p>
+                          <p className="text-[10px] text-white/50 mt-0.5">Complimentary registration including crowd guidance map details.</p>
+                        </div>
+                        <button
+                          onClick={() => handleBookEvent(selectedFestival.id)}
+                          className="px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold text-xs shadow-lg shadow-amber-900/10 transition-all active:scale-95 cursor-pointer"
+                        >
+                          Book Free Entry Pass
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                 </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -128,7 +128,14 @@ const TOP_EXPLORERS = [
 ];
 
 export default function CommunityPage() {
-  const [posts, setPosts] = useState<CommunityPost[]>(INITIAL_POSTS);
+  const [posts, setPosts] = useState<CommunityPost[]>(() => {
+    const stored = localStorage.getItem("kashi_community_posts");
+    return stored ? JSON.parse(stored) : INITIAL_POSTS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("kashi_community_posts", JSON.stringify(posts));
+  }, [posts]);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);

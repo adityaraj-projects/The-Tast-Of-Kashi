@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   BookOpen, ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, 
-  Camera, MapPin, Sparkles, Info, Eye
+  Camera, MapPin, Sparkles, Info, Eye, Volume2, Play, Pause, Square
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -79,6 +79,69 @@ export default function Stories() {
   const [zoomScale, setZoomScale] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedStory, setSelectedStory] = useState<any | null>(null);
+
+  // Speech Synthesis Narrator States
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
+
+  useState(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      setSynth(window.speechSynthesis);
+    }
+  });
+
+  const handlePlayTTS = (title: string, text: string) => {
+    if (!synth) return;
+    synth.cancel(); // Stop any ongoing speech
+    const cleanText = `${title}. ${text}`;
+    const newUtterance = new SpeechSynthesisUtterance(cleanText);
+    newUtterance.lang = "en-IN"; // Culturally appropriate pacing
+    newUtterance.rate = 0.92; // Serene rate
+    newUtterance.onend = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+    newUtterance.onerror = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+    setIsPlaying(true);
+    setIsPaused(false);
+    synth.speak(newUtterance);
+  };
+
+  const handlePauseTTS = () => {
+    if (!synth) return;
+    synth.pause();
+    setIsPaused(true);
+    setIsPlaying(false);
+  };
+
+  const handleResumeTTS = () => {
+    if (!synth) return;
+    synth.resume();
+    setIsPlaying(true);
+    setIsPaused(false);
+  };
+
+  const handleStopTTS = () => {
+    if (!synth) return;
+    synth.cancel();
+    setIsPlaying(false);
+    setIsPaused(false);
+  };
+
+  const handleOpenChangeStory = (open: boolean) => {
+    if (!open) {
+      if (synth) {
+        synth.cancel();
+      }
+      setIsPlaying(false);
+      setIsPaused(false);
+      setSelectedStory(null);
+    }
+  };
 
   const handleNextPhoto = () => {
     if (selectedPhotoIndex === null) return;
@@ -390,7 +453,7 @@ export default function Stories() {
         </Dialog>
 
         {/* Selected Legend Story Detail Dialog */}
-        <Dialog open={selectedStory !== null} onOpenChange={(open: boolean) => !open && setSelectedStory(null)}>
+        <Dialog open={selectedStory !== null} onOpenChange={handleOpenChangeStory}>
           <DialogContent className="max-w-2xl bg-[#0f0a05]/95 backdrop-blur-xl border border-[#C9A227]/20 text-white rounded-3xl overflow-hidden shadow-2xl p-0">
             {selectedStory && (
               <div className="text-left">
@@ -419,9 +482,65 @@ export default function Stories() {
 
                 {/* Content body */}
                 <div className="p-6 space-y-4 max-h-[380px] overflow-y-auto" style={{ scrollbarWidth: "none" }}>
-                  <h2 className="font-serif text-2xl font-bold text-white mb-2">
-                    {selectedStory.title}
-                  </h2>
+                  <div className="flex justify-between items-start mb-2">
+                    <h2 className="font-serif text-2xl font-bold text-white">
+                      {selectedStory.title}
+                    </h2>
+                  </div>
+
+                  {/* Premium TTS Audio Guide Player */}
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-black/40 border border-[#C9A227]/25 backdrop-blur-md">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isPlaying ? 'bg-[#C9A227] text-black animate-pulse' : 'bg-[#C9A227]/10 text-[#C9A227]'}`}>
+                        <Volume2 className="w-4 h-4" />
+                      </div>
+                      <div className="leading-tight text-left">
+                        <p className="text-[11.5px] font-bold text-white">Audio Guide Narrator</p>
+                        <p className="text-[9.5px] text-[#C9A227]/70">
+                          {isPlaying ? "Narrating story..." : isPaused ? "Audio paused" : "Listen in natural voice"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {!isPlaying && !isPaused ? (
+                        <button
+                          onClick={() => handlePlayTTS(selectedStory.title, selectedStory.content)}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#C9A227] text-black text-xs font-bold hover:bg-[#C9A227]/90 active:scale-95 cursor-pointer transition-all flex items-center gap-1"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-black" /> Play
+                        </button>
+                      ) : (
+                        <>
+                          {isPlaying ? (
+                            <button
+                              onClick={handlePauseTTS}
+                              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+                              title="Pause"
+                            >
+                              <Pause className="w-3.5 h-3.5 fill-white" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={handleResumeTTS}
+                              className="p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black cursor-pointer"
+                              title="Resume"
+                            >
+                              <Play className="w-3.5 h-3.5 fill-black" />
+                            </button>
+                          )}
+                          <button
+                            onClick={handleStopTTS}
+                            className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 cursor-pointer"
+                            title="Stop"
+                          >
+                            <Square className="w-3.5 h-3.5 fill-red-400" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
                   <p className="text-xs sm:text-[13px] text-[#C9A227]/80 italic leading-relaxed border-l-2 border-[#C9A227] pl-3">
                     "{selectedStory.excerpt}"
                   </p>
