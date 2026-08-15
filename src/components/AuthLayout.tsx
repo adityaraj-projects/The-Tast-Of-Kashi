@@ -22,9 +22,16 @@ export default function AuthLayout({ children, isLogin = true }: AuthLayoutProps
   const [location] = useLocation();
 
   return (
-    <div className="min-h-screen w-full flex text-white overflow-hidden" style={{ background: "#0f0a05" }}>
+    <div className="min-h-screen w-full flex text-white overflow-hidden relative" style={{ background: "#0f0a05" }}>
+      {/* Mobile background image overlay */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat lg:hidden opacity-30" 
+        style={{ backgroundImage: `url(${bgPath})`, filter: "blur(4px)" }}
+      />
+      <div className="absolute inset-0 bg-black/45 lg:hidden z-0" />
+
       {/* Left Panel */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-between min-h-screen">
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-between min-h-screen z-10">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
@@ -168,11 +175,11 @@ export default function AuthLayout({ children, isLogin = true }: AuthLayoutProps
       </div>
 
       {/* Right Panel */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-12 relative overflow-y-auto z-10">
         <div className="w-full max-w-md relative z-10">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-10 justify-center">
-            <img src={logoPath} alt="The Taste of Kashi" className="h-20 w-auto object-contain" />
+          <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
+            <img src={logoPath} alt="The Taste of Kashi" className="h-16 w-auto object-contain" />
           </div>
 
           {/* Form Card */}
@@ -181,7 +188,7 @@ export default function AuthLayout({ children, isLogin = true }: AuthLayoutProps
             <div className="flex border-b border-white/5 relative">
               <Link
                 href="/login"
-                className={`flex-1 py-5 text-center font-medium text-sm transition-colors ${
+                className={`flex-1 py-4 sm:py-5 text-center font-medium text-sm transition-colors ${
                   location === "/login" ? "text-amber-500" : "text-white/50 hover:text-white/80"
                 }`}
                 data-testid="tab-login"
@@ -190,7 +197,7 @@ export default function AuthLayout({ children, isLogin = true }: AuthLayoutProps
               </Link>
               <Link
                 href="/signup"
-                className={`flex-1 py-5 text-center font-medium text-sm transition-colors ${
+                className={`flex-1 py-4 sm:py-5 text-center font-medium text-sm transition-colors ${
                   location === "/signup" ? "text-amber-500" : "text-white/50 hover:text-white/80"
                 }`}
                 data-testid="tab-signup"
@@ -204,7 +211,7 @@ export default function AuthLayout({ children, isLogin = true }: AuthLayoutProps
             </div>
 
             {/* Form Content */}
-            <div className="p-8 sm:p-10">
+            <div className="p-5 sm:p-10">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location}
