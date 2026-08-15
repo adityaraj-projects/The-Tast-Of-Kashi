@@ -43,6 +43,22 @@ export const STORIES_DATA: Record<string, HistoryStory> = {
     nearbySpots: ["Dashashwamedh Ghat", "Ganga Dwar", "Blue Lassi Shop"],
     bestVendors: ["Government Trust Ticket counter", "VIP Helpdesk inside the Corridor portal"]
   },
+  "Ganga Dwar": {
+    title: "Ganga Dwar",
+    subtitleEn: "Gateway to the Sacred Ganges River",
+    subtitleHi: "पवित्र गंगा नदी का प्रवेश द्वार",
+    image: "/images/ganga-dwar.jpg",
+    english: "Ganga Dwar is the monumental gateway that directly connects the newly constructed Kashi Vishwanath Corridor to Lalita Ghat on the banks of the sacred river Ganges. Inaugurated in December 2021, this architectural masterpiece serves as the primary ceremonial entrance for millions of pilgrims. Historically, pilgrims had to navigate the narrow, crowded lanes of Varanasi to reach the temple after taking their holy dip. Now, the Ganga Dwar provides a grand, barrier-free access way. The gateway itself is built from pink Chunar sandstone, featuring intricate carvings that represent classical temple architecture. Standing tall at the riverfront, Ganga Dwar offers a breath-taking panoramic view of the Ganges, serving as a symbolic portal where the cosmic light of Lord Shiva meets the earthly flow of the sacred river.",
+    hindi: "गंगा द्वार एक भव्य प्रवेश द्वार है जो नव-निर्मित काशी विश्वनाथ कॉरिडोर को सीधे पवित्र नदी गंगा के तट पर ललिता घाट से जोड़ता है। दिसंबर 2021 में उद्घाटन किया गया यह स्थापत्य कला का उत्कृष्ट नमूना है। ऐतिहासिक रूप से, तीर्थयात्रियों को गंगा स्नान के बाद मंदिर तक पहुँचने के लिए वाराणसी की संकरी गलियों से होकर गुजरना पड़ता था। अब, गंगा द्वार एक भव्य, बाधा रहित मार्ग प्रदान करता है। यह द्वार चुनार के गुलाबी बलुआ पत्थर से बनाया गया है जिसपर नक्काशी की गई है। नदी के किनारे खड़ा गंगा द्वार, गंगा नदी का एक लुभावना दृश्य प्रदान करता है।",
+    type: "Heritage",
+    architecture: "Classical temple style constructed using pink Chunar sandstone, decorated with traditional motifs.",
+    timings: "Open 24 Hours",
+    bestTimeEn: "Dawn (5:30 AM – 7:00 AM) or sunset (5:30 PM – 7:00 PM)",
+    dressCode: "Decent clothing appropriate for a pilgrimage setting.",
+    photoRules: "Photography is allowed outside the gateway. Standard corridor rules apply.",
+    nearbySpots: ["Lalita Ghat", "Kashi Vishwanath Temple", "Manikarnika Ghat"],
+    bestVendors: ["Corridor Information Desk", "Ganga Cruise Ticket Counter"]
+  },
   "Assi Ghat": {
     title: "Assi Ghat",
     subtitleEn: "Peaceful riverside ghat for yoga & spirituality",

@@ -344,7 +344,7 @@ export default function AiAssistant() {
           
           {/* COLUMN 1: LEFT - Companion Profile & Modes */}
           <section className="lg:col-span-1 flex flex-col gap-6">
-            <div className="bg-card/35 backdrop-blur-md border border-[#D4AF37]/15 rounded-3xl p-5 flex flex-col items-center text-center">
+            <div className="hidden lg:flex bg-card/35 backdrop-blur-md border border-[#D4AF37]/15 rounded-3xl p-5 flex flex-col items-center text-center">
               
               {/* Circular Avatar */}
               <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#0B0907] to-[#201B14] p-1 border border-[#D4AF37]/25 relative mb-4 avatar-pulse flex items-center justify-center">
@@ -386,8 +386,8 @@ export default function AiAssistant() {
             </div>
 
             {/* Mode selection Segmented sidebar list */}
-            <div className="bg-card/35 backdrop-blur-md border border-[#D4AF37]/15 rounded-3xl p-4 flex flex-col gap-2">
-              <h4 className="text-[10.5px] uppercase font-bold tracking-widest text-[#F2D27A] text-left px-1 mb-2">Select AI Mode</h4>
+            <div className="bg-card/35 backdrop-blur-md border border-[#D4AF37]/15 rounded-3xl p-4 grid grid-cols-2 lg:flex lg:flex-col gap-2">
+              <h4 className="text-[10.5px] uppercase font-bold tracking-widest text-[#F2D27A] text-left px-1 mb-2 col-span-2 lg:col-span-1">Select AI Mode</h4>
               
               <button 
                 onClick={() => setActiveMode("spiritual")}
@@ -452,7 +452,7 @@ export default function AiAssistant() {
           </section>
 
           {/* COLUMN 2 & 3: CENTER - Premium Chat Box Window */}
-          <section className="lg:col-span-2 flex flex-col bg-card/25 backdrop-blur-md border border-[#D4AF37]/15 rounded-3xl overflow-hidden relative items-stretch h-[600px] lg:h-auto">
+          <section className="lg:col-span-2 flex flex-col bg-card/25 backdrop-blur-md border border-[#D4AF37]/15 rounded-3xl overflow-hidden relative items-stretch h-[500px] lg:h-auto">
             {/* Background texture */}
             <div className="absolute inset-0 bg-[url('/map-bg.png')] opacity-[0.03] bg-cover bg-center pointer-events-none" />
             

@@ -534,7 +534,7 @@ export default function MapExplorerPage() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -400, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 120 }}
-              className="absolute top-4 left-4 z-10 w-[350px] max-h-[calc(100%-32px)] bg-[#0d0b08]/92 backdrop-blur-xl border border-[#D4AF37]/20 rounded-3xl p-4 shadow-2xl flex flex-col pointer-events-auto"
+              className="absolute top-4 bottom-20 lg:bottom-4 left-4 z-10 w-[calc(100%-32px)] sm:w-[350px] max-h-[calc(100%-100px)] lg:max-h-[calc(100%-32px)] bg-[#0d0b08]/92 backdrop-blur-xl border border-[#D4AF37]/20 rounded-3xl p-4 shadow-2xl flex flex-col pointer-events-auto"
             >
               {/* Sidebar Header with Gold Logo branding */}
               <div className="flex items-center justify-between border-b border-[#D4AF37]/15 pb-2.5 mb-3 flex-shrink-0">
@@ -734,8 +734,8 @@ export default function MapExplorerPage() {
           </div>
         </div>
 
-        {/* Zoom Controls & Floating Sparkles AI Assistant (bottom right) */}
-        <div className="absolute bottom-6 right-6 flex flex-col gap-2.5 z-10 items-end">
+        {/* Zoom Controls & Floating Sparkles AI Assistant (bottom right) - shifted up on mobile to avoid bottom nav bar overlay */}
+        <div className="absolute bottom-[76px] lg:bottom-6 right-6 flex flex-col gap-2.5 z-10 items-end">
           <div className="flex flex-col gap-1 bg-[#0d0b08]/92 backdrop-blur-xl border border-[#D4AF37]/20 p-1 rounded-2xl shadow-lg">
             <button
               onClick={handleZoomIn}
@@ -772,7 +772,7 @@ export default function MapExplorerPage() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 250, opacity: 0 }}
               transition={{ type: "spring", damping: 20 }}
-              className="absolute bottom-6 left-6 right-6 md:right-auto md:w-[410px] bg-[#0d0b08]/95 backdrop-blur-xl border border-[#D4AF37]/30 rounded-3xl overflow-hidden z-20 shadow-2xl flex flex-col max-h-[70vh] md:max-h-[520px] pointer-events-auto"
+              className="absolute bottom-20 lg:bottom-6 left-4 right-4 sm:left-6 sm:right-auto md:w-[410px] bg-[#0d0b08]/95 backdrop-blur-xl border border-[#D4AF37]/30 rounded-3xl overflow-hidden z-20 shadow-2xl flex flex-col max-h-[60vh] md:max-h-[520px] pointer-events-auto"
             >
               {/* Card Image Banner */}
               <div className="h-[170px] w-full relative overflow-hidden flex-shrink-0">
@@ -985,7 +985,7 @@ export default function MapExplorerPage() {
               initial={{ scale: 0.85, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.85, opacity: 0, y: 50 }}
-              className="absolute bottom-20 right-6 z-20 w-[330px] max-h-[400px] bg-card/95 backdrop-blur-xl border border-[#D4AF37]/40 rounded-3xl p-4 shadow-2xl flex flex-col pointer-events-auto"
+              className="absolute bottom-20 left-4 right-4 sm:left-auto sm:right-6 z-20 w-[calc(100%-32px)] sm:w-[330px] max-h-[350px] bg-card/95 backdrop-blur-xl border border-[#D4AF37]/40 rounded-3xl p-4 shadow-2xl flex flex-col pointer-events-auto"
             >
               {/* Chat Header */}
               <div className="flex items-center justify-between border-b border-border pb-2 mb-3">
