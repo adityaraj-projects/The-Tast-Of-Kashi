@@ -12,6 +12,22 @@ export default defineConfig({
       registerType: "autoUpdate",
       injectRegister: "auto",
       includeAssets: ["favicon.svg", "robots.txt"],
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,svg,webmanifest}"],
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "kashi-images-cache",
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+              },
+            },
+          },
+        ],
+      },
       manifest: {
         name: "The Taste of Kashi",
         short_name: "Taste of Kashi",

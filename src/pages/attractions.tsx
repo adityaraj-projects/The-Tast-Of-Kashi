@@ -126,7 +126,7 @@ export default function Attractions() {
                     style={{ background: "var(--app-card-bg)", border: `1px solid var(--app-card-border)`, boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}
                   >
                     <div className="relative h-[170px] overflow-hidden">
-                      <img src={attr.image} alt={attr.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
+                      <img src={attr.image} alt={attr.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.90) 0%,transparent 55%)" }} />
                       {/* Type badge */}
                       <div className="absolute top-3 left-3">

@@ -123,7 +123,7 @@ export default function Foods() {
                   style={{ background: "var(--app-card-bg)", border: `1px solid var(--app-card-border)`, boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}
                 >
                   <div className="relative h-[160px] overflow-hidden">
-                    <img src={food.image} alt={food.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
+                    <img src={food.image} alt={food.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
                     <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.85) 0%,transparent 55%)" }} />
                     {/* Veg badge */}
                     <div className="absolute top-2.5 left-2.5 w-4 h-4 rounded-sm flex items-center justify-center" style={{ background: "rgba(0,0,0,0.65)", border: "1.5px solid #22c55e" }}>

@@ -279,7 +279,7 @@ export default function Dashboard() {
         {/* Main content area */}
         <div className="flex-1 min-w-0 lg:overflow-y-auto" style={{ scrollbarWidth: "none" }}>
           {/* Hero */}
-          <div className="relative w-full aspect-[3/2] overflow-hidden">
+          <div className="relative w-full h-[320px] sm:h-[350px] md:h-[400px] lg:h-[450px] overflow-hidden">
             <img src="/images/dashboard-kashi-panels.jpg" alt="Kashi" className="w-full h-full object-cover" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(90deg,rgba(4,2,0,0.93) 0%,rgba(4,2,0,0.60) 55%,rgba(4,2,0,0.18) 100%)" }} />
             <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.88) 0%,transparent 55%)" }} />
@@ -652,8 +652,8 @@ export default function Dashboard() {
 
         <aside className="w-full lg:w-[280px] flex-shrink-0 lg:overflow-y-auto border-t lg:border-t-0 lg:border-l" style={{ background: "var(--app-sidebar-bg)", borderColor: "var(--app-card-border)", scrollbarWidth: "none" }}>
           <div className="p-3.5 space-y-4">
-            {/* Top utilities row inside Right Panel */}
-            <div className="flex items-center justify-between gap-1.5 border rounded-2xl bg-black/45 p-2 mb-1 z-10 relative" style={{ borderColor: "var(--app-card-border)" }}>
+            {/* Top utilities row inside Right Panel - hidden on mobile since it is already in header */}
+            <div className="hidden lg:flex items-center justify-between gap-1.5 border rounded-2xl bg-black/45 p-2 mb-1 z-10 relative" style={{ borderColor: "var(--app-card-border)" }}>
               {/* Weather widget */}
               <div
                 onClick={() => setIsWeatherOpen(true)}

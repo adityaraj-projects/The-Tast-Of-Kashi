@@ -49,6 +49,14 @@ export const NAV_ITEMS = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
+export const MOBILE_NAV_ITEMS = [
+  { href: "/", label: "Home", icon: LayoutDashboard },
+  { href: "/foods", label: "Foods", icon: Utensils },
+  { href: "/attractions", label: "Attractions", icon: Landmark },
+  { href: "/ai-assistant", label: "AI Guide", icon: Bot },
+  { href: "/wishlist", label: "Journeys", icon: Navigation },
+];
+
 const SEARCHABLE_ITEMS = [
   { name: "Kashi Vishwanath Temple", image: "/images/kashi-vishwanath.png" },
   { name: "Assi Ghat", image: "/images/evening-ghats.png" },
@@ -463,10 +471,30 @@ export function Layout({ children }: LayoutProps) {
 
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 relative">
         {location !== "/" && headerContent}
-        <main className="flex-1 overflow-y-auto relative">
+        <main className="flex-1 overflow-y-auto relative pb-16 lg:pb-0">
           {location === "/" && headerContent}
           {children}
         </main>
+      </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 h-16 bg-[#0E0A03]/90 backdrop-blur-lg border-t border-[#C9A227]/10 flex items-center justify-around z-40 px-2 pb-safe" style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.4)" }}>
+        {MOBILE_NAV_ITEMS.map((item) => {
+          const isActive = location === item.href;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center justify-center flex-1 h-full py-1.5 transition-all duration-200 cursor-pointer ${
+                isActive ? "text-[#C9A227]" : "text-[#5A4D38] hover:text-[#A08848]"
+              }`}
+            >
+              <Icon className="w-5 h-5 transition-transform group-hover:scale-105" />
+              <span className="text-[10px] mt-1 font-semibold tracking-wide">{item.label}</span>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Weather Forecast Modal */}

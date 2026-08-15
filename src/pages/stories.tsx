@@ -283,11 +283,11 @@ export default function Stories() {
 
         {/* Full-Screen Lightbox Dialog View */}
         <Dialog open={selectedPhotoIndex !== null} onOpenChange={(open: boolean) => !open && setSelectedPhotoIndex(null)}>
-          <DialogContent className="max-w-4xl bg-black/95 border border-white/10 text-white rounded-3xl overflow-hidden shadow-2xl p-0 flex flex-col md:flex-row h-[550px]">
+          <DialogContent className="max-w-4xl bg-black/95 border border-white/10 text-white rounded-3xl overflow-hidden shadow-2xl p-0 flex flex-col md:flex-row h-[90vh] md:h-[550px] max-h-[90vh] md:max-h-[550px]">
             {currentPhoto && (
               <>
                 {/* Left Photo Viewport Panel */}
-                <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-white/5 h-[320px] md:h-full">
+                <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-white/5 h-[260px] md:h-full">
                   {/* Photo itself */}
                   <motion.div
                     animate={{ scale: zoomScale }}
@@ -338,7 +338,7 @@ export default function Stories() {
                 </div>
 
                 {/* Right Metadata/Legends Info Panel */}
-                <div className="w-full md:w-[280px] p-6 flex flex-col justify-between bg-[#070503]/90 text-left shrink-0">
+                <div className="w-full md:w-[280px] p-6 flex flex-col justify-between bg-[#070503]/90 text-left shrink-0 overflow-y-auto flex-1 md:flex-none">
                   <div className="space-y-5">
                     <div className="flex justify-between items-start">
                       <h3 className="font-serif text-xl font-bold tracking-wide text-white leading-tight">
