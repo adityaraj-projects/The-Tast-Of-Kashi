@@ -651,7 +651,7 @@ export default function Dashboard() {
         </div>
 
         <aside className="w-full lg:w-[280px] flex-shrink-0 lg:overflow-y-auto border-t lg:border-t-0 lg:border-l" style={{ background: "var(--app-sidebar-bg)", borderColor: "var(--app-card-border)", scrollbarWidth: "none" }}>
-          <div className="p-3.5 space-y-4">
+          <div className="p-3.5 pb-24 lg:pb-4 space-y-4">
             {/* Top utilities row inside Right Panel - hidden on mobile since it is already in header */}
             <div className="hidden lg:flex items-center justify-between gap-1.5 border rounded-2xl bg-black/45 p-2 mb-1 z-10 relative" style={{ borderColor: "var(--app-card-border)" }}>
               {/* Weather widget */}
@@ -1118,8 +1118,8 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
-      {/* Floating Action Compass Trigger (Module 6) */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-none">
+      {/* Floating Action Compass Trigger (Module 6) - shifted up on mobile to clear the bottom nav bar */}
+      <div className="fixed bottom-20 lg:bottom-6 right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-none">
         
         {/* Expanded menu dock */}
         <AnimatePresence>
