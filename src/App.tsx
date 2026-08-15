@@ -66,17 +66,17 @@ function Router() {
         <Route path="/auth/callback" component={AuthCallback} />
         <Route path="/verify-email" component={VerifyEmail} />
 
-        <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
-        <Route path="/foods" component={() => <ProtectedRoute component={Foods} />} />
-        <Route path="/attractions" component={() => <ProtectedRoute component={Attractions} />} />
-        <Route path="/vendors" component={() => <ProtectedRoute component={Vendors} />} />
-        <Route path="/stories" component={() => <ProtectedRoute component={Stories} />} />
-        <Route path="/wishlist" component={() => <ProtectedRoute component={Wishlist} />} />
-        <Route path="/map" component={() => <ProtectedRoute component={MapExplorer} />} />
-        <Route path="/ai-assistant" component={() => <ProtectedRoute component={AiAssistant} />} />
-        <Route path="/events" component={() => <ProtectedRoute component={Events} />} />
-        <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
-        <Route path="/community" component={() => <ProtectedRoute component={Community} />} />
+        <Route path="/"><ProtectedRoute component={Dashboard} /></Route>
+        <Route path="/foods"><ProtectedRoute component={Foods} /></Route>
+        <Route path="/attractions"><ProtectedRoute component={Attractions} /></Route>
+        <Route path="/vendors"><ProtectedRoute component={Vendors} /></Route>
+        <Route path="/stories"><ProtectedRoute component={Stories} /></Route>
+        <Route path="/wishlist"><ProtectedRoute component={Wishlist} /></Route>
+        <Route path="/map"><ProtectedRoute component={MapExplorer} /></Route>
+        <Route path="/ai-assistant"><ProtectedRoute component={AiAssistant} /></Route>
+        <Route path="/events"><ProtectedRoute component={Events} /></Route>
+        <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
+        <Route path="/community"><ProtectedRoute component={Community} /></Route>
 
         <Route component={NotFound} />
       </Switch>
