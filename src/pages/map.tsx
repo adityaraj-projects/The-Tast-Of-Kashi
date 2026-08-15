@@ -579,6 +579,32 @@ export default function MapExplorerPage() {
                 )}
               </div>
 
+              {/* Mobile Category Filter Chips inside Sidebar */}
+              <div className="md:hidden flex gap-1.5 overflow-x-auto pb-2.5 mb-3.5 select-none scrollbar-none shrink-0" style={{ scrollbarWidth: "none" }}>
+                {FILTER_CHIPS.map(chip => {
+                  const isActive = filter === chip.id;
+                  return (
+                    <button
+                      key={chip.id}
+                      onClick={() => {
+                        setFilter(chip.id);
+                        setActiveFocusId(null);
+                        setActiveTrail(null);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-bold cursor-pointer border backdrop-blur-md shrink-0 transition-all"
+                      style={{
+                        borderColor: isActive ? chip.color : "rgba(212, 175, 55, 0.15)",
+                        background: isActive ? `${chip.color}15` : "rgba(13, 11, 8, 0.85)",
+                        color: isActive ? chip.color : "rgba(255, 255, 255, 0.6)"
+                      }}
+                    >
+                      <span>{chip.emoji}</span>
+                      <span>{chip.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               {/* Suggested AI Trails routes */}
               <div className="mb-4 flex-shrink-0">
                 <div className="flex items-center gap-1.5 mb-2.5">
@@ -676,8 +702,8 @@ export default function MapExplorerPage() {
           </button>
         )}
 
-        {/* Floating Category Filter Chips (top panel style) */}
-        <div className="absolute top-4 left-[80px] md:left-[380px] right-[240px] z-10 flex gap-2 overflow-x-auto pb-2 select-none scrollbar-none pointer-events-auto pr-4" style={{ scrollbarWidth: "none" }}>
+        {/* Floating Category Filter Chips (top panel style) - hidden on mobile since they are rendered inside sidebar */}
+        <div className="hidden md:flex absolute top-4 left-[380px] right-[240px] z-10 gap-2 overflow-x-auto pb-2 select-none scrollbar-none pointer-events-auto pr-4" style={{ scrollbarWidth: "none" }}>
           {FILTER_CHIPS.map(chip => {
             const isActive = filter === chip.id;
             return (
@@ -704,8 +730,8 @@ export default function MapExplorerPage() {
           })}
         </div>
 
-        {/* Floating Live Telemetry Widgets (Airbnb inspired top right stack) */}
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 max-w-[200px] pointer-events-none md:pointer-events-auto">
+        {/* Floating Live Telemetry Widgets (Airbnb inspired top right stack) - hidden on mobile to avoid overlapping sidebar */}
+        <div className="hidden md:flex absolute top-4 right-4 z-10 flex flex-col gap-2 max-w-[200px] pointer-events-none md:pointer-events-auto">
           {/* Weather & AQI */}
           <div className="bg-[#0d0b08]/85 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl p-2.5 shadow-lg flex items-center gap-2">
             <Sun className="w-4 h-4 text-[#D4AF37] animate-spin-slow flex-shrink-0" />
