@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase, isMockMode } from "@/lib/supabaseClient";
+import { STORIES_DATA } from "@/lib/stories-data";
 import {
   mockDashboardSummary,
   mockRecommended,
@@ -99,7 +100,7 @@ export function useGetCategories() {
 
 export function useGetVendors(params?: { limit?: number }) {
   const [data, setData] = useState<typeof mockVendors>(() => {
-    return isMockMode() ? (params?.limit ? mockVendors.slice(0, params.limit) : mockVendors) : [];
+    return params?.limit ? mockVendors.slice(0, params.limit) : mockVendors;
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -113,29 +114,29 @@ export function useGetVendors(params?: { limit?: number }) {
         }
         const { data: dbData, error: dbError } = await query;
         if (dbError) throw dbError;
-        if (dbData) {
-          const mapped = dbData.map(v => ({
-            id: String(v.id),
-            name: v.name || v.fullName || "",
-            specialty: v.specialty || "",
-            location: v.location || "",
-            rating: Number(v.rating || 4.7),
-            imageUrl: v.image_url || v.imageUrl || "/images/logo.png",
-            isVerified: !!v.is_verified || !!v.isVerified,
-          }));
-          setData(mapped);
+        if (dbData && dbData.length > 0) {
+          const hasInvalid = dbData.some(v => !v.name || v.name.toLowerCase().includes("generic") || v.name.toLowerCase().includes("mock"));
+          if (hasInvalid) {
+            setData(params?.limit ? mockVendors.slice(0, params.limit) : mockVendors);
+          } else {
+            const mapped = dbData.map(v => ({
+              id: String(v.id),
+              name: v.name || v.fullName || "",
+              specialty: v.specialty || "",
+              location: v.location || "",
+              rating: Number(v.rating || 4.7),
+              imageUrl: v.image_url || v.imageUrl || "/images/logo.png",
+              isVerified: !!v.is_verified || !!v.isVerified,
+            }));
+            setData(mapped);
+          }
         } else {
-          setData([]);
+          setData(params?.limit ? mockVendors.slice(0, params.limit) : mockVendors);
         }
         setError(null);
       } catch (err: any) {
         console.error("Failed to fetch vendors from Supabase:", err);
-        if (isMockMode()) {
-          setData(params?.limit ? mockVendors.slice(0, params.limit) : mockVendors);
-        } else {
-          setError(err);
-          setData([]);
-        }
+        setData(params?.limit ? mockVendors.slice(0, params.limit) : mockVendors);
       } finally {
         setIsLoading(false);
       }
@@ -148,7 +149,7 @@ export function useGetVendors(params?: { limit?: number }) {
 
 export function useGetStories(params?: { limit?: number }) {
   const [data, setData] = useState<any[]>(() => {
-    return isMockMode() ? (params?.limit ? mockStories.slice(0, params.limit) : mockStories) : [];
+    return params?.limit ? mockStories.slice(0, params.limit) : mockStories;
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -162,29 +163,29 @@ export function useGetStories(params?: { limit?: number }) {
         }
         const { data: dbStories, error: dbError } = await query;
         if (dbError) throw dbError;
-        if (dbStories) {
-          const mapped = dbStories.map(s => ({
-            id: String(s.id),
-            title: s.title,
-            category: s.category || "Mythology",
-            readTime: s.duration || s.read_time || s.readTime || "5 min read",
-            imageUrl: s.image_url || s.image || s.imageUrl || "/images/logo.png",
-            excerpt: s.description || s.content || s.excerpt || "",
-            audioUrl: s.audio_url || s.audioUrl || "",
-          }));
-          setData(mapped);
+        if (dbStories && dbStories.length > 0) {
+          const hasInvalid = dbStories.some(s => !s.title || s.title.toLowerCase().includes("stroll") || s.title.toLowerCase().includes("alley"));
+          if (hasInvalid) {
+            setData(params?.limit ? mockStories.slice(0, params.limit) : mockStories);
+          } else {
+            const mapped = dbStories.map(s => ({
+              id: String(s.id),
+              title: s.title,
+              category: s.category || "Mythology",
+              readTime: s.duration || s.read_time || s.readTime || "5 min read",
+              imageUrl: s.image_url || s.image || s.imageUrl || "/images/logo.png",
+              excerpt: s.description || s.content || s.excerpt || "",
+              audioUrl: s.audio_url || s.audioUrl || "",
+            }));
+            setData(mapped);
+          }
         } else {
-          setData([]);
+          setData(params?.limit ? mockStories.slice(0, params.limit) : mockStories);
         }
         setError(null);
       } catch (err: any) {
         console.error("Failed to fetch stories from Supabase:", err);
-        if (isMockMode()) {
-          setData(params?.limit ? mockStories.slice(0, params.limit) : mockStories);
-        } else {
-          setError(err);
-          setData([]);
-        }
+        setData(params?.limit ? mockStories.slice(0, params.limit) : mockStories);
       } finally {
         setIsLoading(false);
       }
@@ -197,7 +198,7 @@ export function useGetStories(params?: { limit?: number }) {
 
 export function useGetEvents(params?: { limit?: number }) {
   const [data, setData] = useState<any[]>(() => {
-    return isMockMode() ? (params?.limit ? mockEvents.slice(0, params.limit) : mockEvents) : [];
+    return params?.limit ? mockEvents.slice(0, params.limit) : mockEvents;
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -211,33 +212,33 @@ export function useGetEvents(params?: { limit?: number }) {
         }
         const { data: dbEvents, error: dbError } = await query;
         if (dbError) throw dbError;
-        if (dbEvents) {
-          const mapped = dbEvents.map(e => ({
-            id: String(e.id),
-            name: e.title || e.name || "",
-            date: e.date || e.event_date || "",
-            status: e.status || "Upcoming",
-            description: e.tagline || e.description || "",
-            imageUrl: e.image_url || e.image || e.imageUrl || "/images/logo.png",
-            timing: e.timing || "Full Day",
-            location: e.location || "Varanasi",
-            spots: e.spots ? (typeof e.spots === "string" ? e.spots.split(",") : e.spots) : ["Assi Ghat"],
-            logistics: e.logistics || "Direct public transit options available.",
-            crowd: e.crowd || "Moderate"
-          }));
-          setData(mapped);
+        if (dbEvents && dbEvents.length > 0) {
+          const hasInvalid = dbEvents.some(e => !e.title && !e.name);
+          if (hasInvalid) {
+            setData(params?.limit ? mockEvents.slice(0, params.limit) : mockEvents);
+          } else {
+            const mapped = dbEvents.map(e => ({
+              id: String(e.id),
+              name: e.title || e.name || "",
+              date: e.date || e.event_date || "",
+              status: e.status || "Upcoming",
+              description: e.tagline || e.description || "",
+              imageUrl: e.image_url || e.image || e.imageUrl || "/images/logo.png",
+              timing: e.timing || "Full Day",
+              location: e.location || "Varanasi",
+              spots: e.spots ? (typeof e.spots === "string" ? e.spots.split(",") : e.spots) : ["Assi Ghat"],
+              logistics: e.logistics || "Direct public transit options available.",
+              crowd: e.crowd || "Moderate"
+            }));
+            setData(mapped);
+          }
         } else {
-          setData([]);
+          setData(params?.limit ? mockEvents.slice(0, params.limit) : mockEvents);
         }
         setError(null);
       } catch (err: any) {
         console.error("Failed to fetch events from Supabase:", err);
-        if (isMockMode()) {
-          setData(params?.limit ? mockEvents.slice(0, params.limit) : mockEvents);
-        } else {
-          setError(err);
-          setData([]);
-        }
+        setData(params?.limit ? mockEvents.slice(0, params.limit) : mockEvents);
       } finally {
         setIsLoading(false);
       }
@@ -277,7 +278,7 @@ export const ATTRACTIONS_FALLBACK = [
 
 export function useGetFoods() {
   const [data, setData] = useState<any[]>(() => {
-    return isMockMode() ? FOODS_FALLBACK : [];
+    return FOODS_FALLBACK;
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -287,30 +288,30 @@ export function useGetFoods() {
       try {
         const { data: dbFoods, error: dbError } = await supabase.from("foods").select("*");
         if (dbError) throw dbError;
-        if (dbFoods) {
-          const mapped = dbFoods.map(f => ({
-            name: f.name || "",
-            tagline: f.tagline || f.description || "",
-            image: f.image_url || f.imageUrl || "/images/logo.png",
-            rating: Number(f.rating || 4.7),
-            price: Number(f.price || 40),
-            category: f.category || "Street Food",
-            isVeg: f.is_veg !== false,
-            spice: f.spice || "Medium"
-          }));
-          setData(mapped);
+        if (dbFoods && dbFoods.length > 0) {
+          const hasInvalid = dbFoods.some(f => !STORIES_DATA[f.name] || f.name.toLowerCase().includes("chicken") || f.name.toLowerCase().includes("tikka") || f.name.toLowerCase().includes("patty") || f.name.toLowerCase().includes("basmati"));
+          if (hasInvalid) {
+            setData(FOODS_FALLBACK);
+          } else {
+            const mapped = dbFoods.map(f => ({
+              name: f.name || "",
+              tagline: f.tagline || f.description || "",
+              image: f.image_url || f.imageUrl || "/images/logo.png",
+              rating: Number(f.rating || 4.7),
+              price: Number(f.price || 40),
+              category: f.category || "Street Food",
+              isVeg: f.is_veg !== false,
+              spice: f.spice || "Medium"
+            }));
+            setData(mapped);
+          }
         } else {
-          setData([]);
+          setData(FOODS_FALLBACK);
         }
         setError(null);
       } catch (err: any) {
         console.error("Failed to fetch foods from Supabase:", err);
-        if (isMockMode()) {
-          setData(FOODS_FALLBACK);
-        } else {
-          setError(err);
-          setData([]);
-        }
+        setData(FOODS_FALLBACK);
       } finally {
         setIsLoading(false);
       }
@@ -323,7 +324,7 @@ export function useGetFoods() {
 
 export function useGetAttractions() {
   const [data, setData] = useState<any[]>(() => {
-    return isMockMode() ? ATTRACTIONS_FALLBACK : [];
+    return ATTRACTIONS_FALLBACK;
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -333,29 +334,29 @@ export function useGetAttractions() {
       try {
         const { data: dbAttractions, error: dbError } = await supabase.from("attractions").select("*");
         if (dbError) throw dbError;
-        if (dbAttractions) {
-          const mapped = dbAttractions.map(a => ({
-            name: a.name || "",
-            sub: a.description || a.sub || "",
-            image: a.image_url || a.image || "/images/logo.png",
-            rating: Number(a.rating || 4.8),
-            type: a.type || "Ghat",
-            timing: a.timing || "Open All Day",
-            location: a.location || "Varanasi"
-          }));
-          setData(mapped);
+        if (dbAttractions && dbAttractions.length > 0) {
+          const hasInvalid = dbAttractions.some(a => !STORIES_DATA[a.name] || a.name.toLowerCase().includes("lucknow") || a.name.toLowerCase().includes("stroll") || a.name.toLowerCase().includes("jaipur"));
+          if (hasInvalid) {
+            setData(ATTRACTIONS_FALLBACK);
+          } else {
+            const mapped = dbAttractions.map(a => ({
+              name: a.name || "",
+              sub: a.description || a.sub || "",
+              image: a.image_url || a.image || "/images/logo.png",
+              rating: Number(a.rating || 4.8),
+              type: a.type || "Ghat",
+              timing: a.timing || "Open All Day",
+              location: a.location || "Varanasi"
+            }));
+            setData(mapped);
+          }
         } else {
-          setData([]);
+          setData(ATTRACTIONS_FALLBACK);
         }
         setError(null);
       } catch (err: any) {
         console.error("Failed to fetch attractions from Supabase:", err);
-        if (isMockMode()) {
-          setData(ATTRACTIONS_FALLBACK);
-        } else {
-          setError(err);
-          setData([]);
-        }
+        setData(ATTRACTIONS_FALLBACK);
       } finally {
         setIsLoading(false);
       }
