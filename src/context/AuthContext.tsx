@@ -48,13 +48,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 
   useEffect(() => {
+    let active = true;
+
     const checkSession = async () => {
+      // Safety timeout: If Supabase connection hangs or is blocked on mobile, proceed with local cache
+      const timer = setTimeout(() => {
+        if (active) {
+          console.warn("Supabase session check timed out. Proceeding with cache fallback.");
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              setUser(JSON.parse(stored));
+            }
+          } catch {}
+          setIsLoading(false);
+        }
+      }, 2000);
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        if (!active) {
+          clearTimeout(timer);
+          return;
+        }
+
         if (session?.user) {
           if (!isMockMode() && !session.user.email_confirmed_at) {
             localStorage.removeItem(STORAGE_KEY);
             setUser(null);
+            clearTimeout(timer);
             setIsLoading(false);
             return;
           }
@@ -64,6 +86,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .eq("auth_user_id", session.user.id)
             .single();
 
+          if (!active) {
+            clearTimeout(timer);
+            return;
+          }
+
           const mappedUser: User = {
             id: String(profile?.id || session.user.id),
             auth_user_id: session.user.id,
@@ -75,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           setUser(mappedUser);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(mappedUser));
+          clearTimeout(timer);
           setIsLoading(false);
           return;
         }
@@ -82,58 +110,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn("Supabase session check failed:", err);
       }
 
-      if (isMockMode()) {
-        try {
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored) {
-            setUser(JSON.parse(stored));
-          }
-        } catch {}
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
-        setUser(null);
+      if (active) {
+        if (isMockMode()) {
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              setUser(JSON.parse(stored));
+            }
+          } catch {}
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+          setUser(null);
+        }
+        clearTimeout(timer);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        if (!isMockMode() && !session.user.email_confirmed_at) {
+    let subscription: any = null;
+    try {
+      const res = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!active) return;
+        if (session?.user) {
+          if (!isMockMode() && !session.user.email_confirmed_at) {
+            setUser(null);
+            localStorage.removeItem(STORAGE_KEY);
+            return;
+          }
+          try {
+            const { data: profile } = await supabase
+              .from("users")
+              .select("*")
+              .eq("auth_user_id", session.user.id)
+              .single();
+
+            if (!active) return;
+
+            const mappedUser: User = {
+              id: String(profile?.id || session.user.id),
+              auth_user_id: session.user.id,
+              fullName: profile?.display_name || profile?.fullName || session.user.user_metadata?.fullName || "Aditya Rai",
+              username: profile?.username || session.user.user_metadata?.username || "aditya",
+              email: session.user.email || "",
+              phone: profile?.phone || session.user.user_metadata?.phone || "",
+              role: profile?.role || "user",
+            };
+            setUser(mappedUser);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(mappedUser));
+          } catch {
+            // keep existing user if query fails
+          }
+        } else if (event === "SIGNED_OUT") {
           setUser(null);
           localStorage.removeItem(STORAGE_KEY);
-          return;
         }
-        try {
-          const { data: profile } = await supabase
-            .from("users")
-            .select("*")
-            .eq("auth_user_id", session.user.id)
-            .single();
-
-          const mappedUser: User = {
-            id: String(profile?.id || session.user.id),
-            auth_user_id: session.user.id,
-            fullName: profile?.display_name || profile?.fullName || session.user.user_metadata?.fullName || "Aditya Rai",
-            username: profile?.username || session.user.user_metadata?.username || "aditya",
-            email: session.user.email || "",
-            phone: profile?.phone || session.user.user_metadata?.phone || "",
-            role: profile?.role || "user",
-          };
-          setUser(mappedUser);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(mappedUser));
-        } catch {
-          // keep existing user if query fails
-        }
-      } else if (event === "SIGNED_OUT") {
-        setUser(null);
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    });
+      });
+      subscription = res?.data?.subscription;
+    } catch (e) {
+      console.warn("onAuthStateChange registration failed:", e);
+    }
 
     return () => {
-      subscription.unsubscribe();
+      active = false;
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 
