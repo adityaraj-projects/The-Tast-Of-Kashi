@@ -43,6 +43,22 @@ export const STORIES_DATA: Record<string, HistoryStory> = {
     nearbySpots: ["Dashashwamedh Ghat", "Ganga Dwar", "Blue Lassi Shop"],
     bestVendors: ["Government Trust Ticket counter", "VIP Helpdesk inside the Corridor portal"]
   },
+  "Namo Ghat": {
+    title: "Namo Ghat",
+    subtitleEn: "Modern Riverfront Landmark of Varanasi",
+    subtitleHi: "वाराणसी का आधुनिक रिवरफ्रंट लैंडमार्क",
+    image: "/images/Namo Ghat.png",
+    english: "Namo Ghat, also known as Khidkiya Ghat, is one of the largest and most modern ghats of Varanasi. It is most famous for its three iconic, majestic bronze sculptures of folded hands in the 'Namaste' posture, standing tall at 25 feet and 15 feet. These sculptures symbolize welcoming visitors and paying tribute to the sacred river Ganges. Redeveloped in phases, Namo Ghat features premium walking plazas, open-air theatres, floating food courts, and utility amenities. It is the first fully accessible ghat in Varanasi, offering barrier-free ramps for differently-abled and elderly visitors. Namo Ghat is a beautiful blend of traditional spirituality and contemporary civic infrastructure, attracting tourists and locals for morning walks, cultural programs, and sunset boat rides.",
+    hindi: "नमो घाट, जिसे खिड़किया घाट भी कहा जाता है, वाराणसी के सबसे बड़े और सबसे आधुनिक घाटों में से एक है। यह 'नमस्ते' मुद्रा में मुड़े हुए हाथों की तीन विशाल कांस्य मूर्तियों के लिए प्रसिद्ध है, जो 25 फीट और 15 फीट की ऊंचाई पर खड़ी हैं। ये मूर्तियां आगंतुकों का स्वागत करने और पवित्र नदी गंगा को श्रद्धांजलि देने का प्रतीक हैं। नमो घाट पर सुंदर रास्ते, ओपन-एयर थिएटर, फ्लोटिंग फूड कोर्ट और अन्य सुविधाएं हैं। यह वाराणसी का पहला पूरी तरह से सुलभ घाट है।",
+    type: "Ghat",
+    architecture: "Modern riverfront plaza constructed using high-quality stone tiles, featuring large bronze folded-hands statues.",
+    timings: "Open 24 Hours",
+    bestTimeEn: "Evening (5:00 PM – 7:30 PM) for visual sunset reflections.",
+    dressCode: "Decent casual clothing suitable for public walking spaces.",
+    photoRules: "Photography is fully allowed. Popular spot for drone photography and reels.",
+    nearbySpots: ["Rajghat Bridge", "Kashi Railway Station", "Adi Keshav Temple"],
+    bestVendors: ["Namo Ghat Food Court", "Alaknanda Cruise Rajghat Boarding Point"]
+  },
   "Ganga Dwar": {
     title: "Ganga Dwar",
     subtitleEn: "Gateway to the Sacred Ganges River",

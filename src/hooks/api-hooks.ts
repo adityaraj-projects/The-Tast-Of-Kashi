@@ -274,6 +274,7 @@ export const ATTRACTIONS_FALLBACK = [
   { name: "Ramnagar Fort", sub: "18th century royal fort on the Ganges", image: "/images/ramnagar-fort.png", rating: 4.6, type: "Heritage", timing: "10 AM – 5 PM", location: "Ramnagar, Varanasi" },
   { name: "Swarved Mahamandir", sub: "Grand multistory meditation temple", image: "/images/swarved-mahamandir.png", rating: 4.9, type: "Temple", timing: "6 AM – 7 PM", location: "Umaraha, Varanasi" },
   { name: "Alaknanda Jetty", sub: "Luxury double-decker Ganga cruise boarding jetty", image: "/images/alaknanda-jetty.jpg", rating: 4.8, type: "Boat", timing: "5 AM – 9 PM", location: "Ravidas Ghat Jetty, Varanasi" },
+  { name: "Namo Ghat", sub: "Modern riverfront ghat famous for its majestic folded-hands sculptures", image: "/images/Namo Ghat.png", rating: 4.8, type: "Ghat", timing: "Open All Day", location: "Rajghat, Varanasi" },
 ];
 
 export function useGetFoods() {

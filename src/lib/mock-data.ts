@@ -52,6 +52,15 @@ export const mockRecommended = [
     imageUrl: "/images/ghats-night.png",
     location: "Manikarnika Ghat",
   },
+  {
+    id: "namo-ghat-rec",
+    title: "Namo Ghat",
+    type: "Ghat",
+    rating: 4.8,
+    subtitle: "Modern riverfront ghat famous for folded-hands sculptures",
+    imageUrl: "/images/Namo Ghat.png",
+    location: "Rajghat, Varanasi",
+  },
 ];
 
 export const mockCategories = [
