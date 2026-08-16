@@ -134,7 +134,7 @@ export default function Foods() {
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleWishlist({
-                          id: `food_${food.name}`,
+                          id: food.id,
                           title: food.name,
                           itemType: "Food",
                           imageUrl: food.image
@@ -146,8 +146,8 @@ export default function Foods() {
                       <Bookmark 
                         className="w-3.5 h-3.5" 
                         style={{ 
-                          color: isWishlistItem(food.name) ? "#C9A227" : "#FFFFFF",
-                          fill: isWishlistItem(food.name) ? "#C9A227" : "none"
+                          color: isWishlistItem(food.id, "Food") ? "#C9A227" : "#FFFFFF",
+                          fill: isWishlistItem(food.id, "Food") ? "#C9A227" : "none"
                         }} 
                       />
                     </button>

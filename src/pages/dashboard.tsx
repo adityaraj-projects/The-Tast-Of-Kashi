@@ -15,29 +15,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { SearchBar } from "@/components/SearchBar";
 
 const POPULAR_FOODS = [
-  { name: "Tamatar Chaat", tagline: "The Iconic Street Delight", image: "/images/tamatar-chaat.png", rating: 4.8, price: 40 },
-  { name: "Malaiyyo", tagline: "Winter's Royal Treat", image: "/images/malaiyoo.png", rating: 4.7, price: 60 },
-  { name: "Banarasi Lassi", tagline: "Rich, Creamy, Divine", image: "/images/banarasi-lassi.png", rating: 4.6, price: 35 },
-  { name: "Kachori Sabzi", tagline: "Crispy & Spicy Breakfast", image: "/images/kachori-sabji.png", rating: 4.7, price: 30 },
-  { name: "Rabri Jalebi", tagline: "Timeless Sweet Combo", image: "/images/jalebi-imarti.png", rating: 4.6, price: 50 },
-  { name: "Banarasi Paan", tagline: "A Tradition of Taste", image: "/images/banarasi-paan.png", rating: 4.8, price: 20 },
-  { name: "Kulfi Falooda", tagline: "Creamy Frozen Bliss", image: "/images/kulfi-falooda.png", rating: 4.5, price: 55 },
-  { name: "Thandai", tagline: "Festival Drink of Kashi", image: "/images/thandai.png", rating: 4.7, price: 45 },
-  { name: "Malpua Rabri", tagline: "Fried Sweet Pancakes", image: "/images/malpua-rabri.png", rating: 4.6, price: 65 },
-  { name: "Rabdi", tagline: "Reduced Milk Dessert", image: "/images/rabdi.png", rating: 4.5, price: 40 },
+  { id: "fallback_food_1", name: "Tamatar Chaat", tagline: "The Iconic Street Delight", image: "/images/tamatar-chaat.png", rating: 4.8, price: 40 },
+  { id: "fallback_food_2", name: "Malaiyyo", tagline: "Winter's Royal Treat", image: "/images/malaiyoo.png", rating: 4.7, price: 60 },
+  { id: "fallback_food_3", name: "Banarasi Lassi", tagline: "Rich, Creamy, Divine", image: "/images/banarasi-lassi.png", rating: 4.6, price: 35 },
+  { id: "fallback_food_4", name: "Kachori Sabzi", tagline: "Crispy & Spicy Breakfast", image: "/images/kachori-sabji.png", rating: 4.7, price: 30 },
+  { id: "fallback_food_5", name: "Rabri Jalebi", tagline: "Timeless Sweet Combo", image: "/images/jalebi-imarti.png", rating: 4.6, price: 50 },
+  { id: "fallback_food_6", name: "Banarasi Paan", tagline: "A Tradition of Taste", image: "/images/banarasi-paan.png", rating: 4.8, price: 20 },
+  { id: "fallback_food_7", name: "Kulfi Falooda", tagline: "Creamy Frozen Bliss", image: "/images/kulfi-falooda.png", rating: 4.5, price: 55 },
+  { id: "fallback_food_8", name: "Thandai", tagline: "Festival Drink of Kashi", image: "/images/thandai.png", rating: 4.7, price: 45 },
+  { id: "fallback_food_9", name: "Malpua Rabri", tagline: "Fried Sweet Pancakes", image: "/images/malpua-rabri.png", rating: 4.6, price: 65 },
+  { id: "fallback_food_10", name: "Rabdi", tagline: "Reduced Milk Dessert", image: "/images/rabdi.png", rating: 4.5, price: 40 },
 ];
 
 const TOP_ATTRACTIONS = [
-  { name: "Kashi Vishwanath Temple", sub: "Spiritual Icon", image: "/images/kashi-vishwanath-aerial.jpg", rating: 4.9 },
-  { name: "Ganga Dwar", sub: "Gateway to the Ganges", image: "/images/ganga-dwar.jpg", rating: 4.9 },
-  { name: "Assi Ghat", sub: "Peaceful & Spiritual", image: "/images/assi-ghat-aarti.jpg", rating: 4.7 },
-  { name: "Sarnath", sub: "Historical Treasure", image: "/images/sarnath.png", rating: 4.6 },
-  { name: "Dashashwamedh Ghat", sub: "Divine Aarti Experience", image: "/images/dashashwamedh-ghat-aarti.jpg", rating: 4.8 },
-  { name: "BHU Campus", sub: "Heritage & Knowledge", image: "/images/ghats-night.png", rating: 4.7 },
-  { name: "Kaal Bhairav Temple", sub: "Kotwal of Kashi", image: "/images/kaal-bhairav.png", rating: 4.8 },
-  { name: "Manikarnika Ghat", sub: "Sacred Cremation Ground", image: "/images/manikarnika-ghat.png", rating: 4.8 },
-  { name: "Ramnagar Fort", sub: "Royal Heritage", image: "/images/ramnagar-fort.png", rating: 4.6 },
-  { name: "Swarved Mahamandir", sub: "Modern Meditation Temple", image: "/images/swarved-mahamandir.png", rating: 4.9 },
+  { id: "fallback_attr_1", name: "Kashi Vishwanath Temple", sub: "Spiritual Icon", image: "/images/kashi-vishwanath-aerial.jpg", rating: 4.9 },
+  { id: "fallback_attr_2", name: "Ganga Dwar", sub: "Gateway to the Ganges", image: "/images/ganga-dwar.jpg", rating: 4.9 },
+  { id: "fallback_attr_3", name: "Assi Ghat", sub: "Peaceful & Spiritual", image: "/images/assi-ghat-aarti.jpg", rating: 4.7 },
+  { id: "fallback_attr_4", name: "Sarnath", sub: "Historical Treasure", image: "/images/sarnath.png", rating: 4.6 },
+  { id: "fallback_attr_5", name: "Dashashwamedh Ghat", sub: "Divine Aarti Experience", image: "/images/dashashwamedh-ghat-aarti.jpg", rating: 4.8 },
+  { id: "fallback_attr_6", name: "BHU Campus", sub: "Heritage & Knowledge", image: "/images/ghats-night.png", rating: 4.7 },
+  { id: "fallback_attr_7", name: "Kaal Bhairav Temple", sub: "Kotwal of Kashi", image: "/images/kaal-bhairav.png", rating: 4.8 },
+  { id: "fallback_attr_8", name: "Manikarnika Ghat", sub: "Sacred Cremation Ground", image: "/images/manikarnika-ghat.png", rating: 4.8 },
+  { id: "fallback_attr_9", name: "Ramnagar Fort", sub: "Royal Heritage", image: "/images/ramnagar-fort.png", rating: 4.6 },
+  { id: "fallback_attr_10", name: "Swarved Mahamandir", sub: "Modern Meditation Temple", image: "/images/swarved-mahamandir.png", rating: 4.9 },
 ];
 
 const EVENTS = [
@@ -455,7 +455,7 @@ export default function Dashboard() {
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleWishlist({
-                            id: `food_${food.name}`,
+                            id: food.id,
                             title: food.name,
                             itemType: "Food",
                             imageUrl: food.image
@@ -467,8 +467,8 @@ export default function Dashboard() {
                         <Bookmark
                           className="w-3 h-3"
                           style={{
-                            color: isWishlistItem(food.name) ? "#C9A227" : "#FFFFFF",
-                            fill: isWishlistItem(food.name) ? "#C9A227" : "none"
+                            color: isWishlistItem(food.id, "Food") ? "#C9A227" : "#FFFFFF",
+                            fill: isWishlistItem(food.id, "Food") ? "#C9A227" : "none"
                           }}
                         />
                       </button>
@@ -515,7 +515,7 @@ export default function Dashboard() {
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleWishlist({
-                            id: `attr_${attr.name}`,
+                            id: attr.id,
                             title: attr.name,
                             itemType: attr.name.includes("Ghat") ? "Ghat" : "Temple",
                             imageUrl: attr.image
@@ -527,8 +527,8 @@ export default function Dashboard() {
                         <Bookmark
                           className="w-3 h-3"
                           style={{
-                            color: isWishlistItem(attr.name) ? "#C9A227" : "#FFFFFF",
-                            fill: isWishlistItem(attr.name) ? "#C9A227" : "none"
+                            color: isWishlistItem(attr.id, attr.name.includes("Ghat") ? "Ghat" : "Temple") ? "#C9A227" : "#FFFFFF",
+                            fill: isWishlistItem(attr.id, attr.name.includes("Ghat") ? "Ghat" : "Temple") ? "#C9A227" : "none"
                           }}
                         />
                       </button>

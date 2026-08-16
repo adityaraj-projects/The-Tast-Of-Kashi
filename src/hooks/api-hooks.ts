@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase, isMockMode } from "@/lib/supabaseClient";
 import { STORIES_DATA } from "@/lib/stories-data";
+import { toast } from "@/hooks/use-toast";
+
+// Module-level map to track active mutations per item title to prevent race conditions and duplicate operations.
+const itemSyncQueues = new Map<string, Promise<void>>();
 import {
   mockDashboardSummary,
   mockRecommended,
@@ -279,7 +283,7 @@ export const ATTRACTIONS_FALLBACK = [
 
 export function useGetFoods() {
   const [data, setData] = useState<any[]>(() => {
-    return FOODS_FALLBACK;
+    return FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f }));
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -292,9 +296,10 @@ export function useGetFoods() {
         if (dbFoods && dbFoods.length > 0) {
           const hasInvalid = dbFoods.some(f => !STORIES_DATA[f.name] || f.name.toLowerCase().includes("chicken") || f.name.toLowerCase().includes("tikka") || f.name.toLowerCase().includes("patty") || f.name.toLowerCase().includes("basmati"));
           if (hasInvalid) {
-            setData(FOODS_FALLBACK);
+            setData(FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f })));
           } else {
             const mapped = dbFoods.map(f => ({
+              id: String(f.id),
               name: f.name || "",
               tagline: f.tagline || f.description || "",
               image: f.image_url || f.imageUrl || "/images/logo.png",
@@ -307,12 +312,12 @@ export function useGetFoods() {
             setData(mapped);
           }
         } else {
-          setData(FOODS_FALLBACK);
+          setData(FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f })));
         }
         setError(null);
       } catch (err: any) {
         console.error("Failed to fetch foods from Supabase:", err);
-        setData(FOODS_FALLBACK);
+        setData(FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f })));
       } finally {
         setIsLoading(false);
       }
@@ -325,7 +330,7 @@ export function useGetFoods() {
 
 export function useGetAttractions() {
   const [data, setData] = useState<any[]>(() => {
-    return ATTRACTIONS_FALLBACK;
+    return ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a }));
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -338,9 +343,10 @@ export function useGetAttractions() {
         if (dbAttractions && dbAttractions.length > 0) {
           const hasInvalid = dbAttractions.some(a => !STORIES_DATA[a.name] || a.name.toLowerCase().includes("lucknow") || a.name.toLowerCase().includes("stroll") || a.name.toLowerCase().includes("jaipur"));
           if (hasInvalid) {
-            setData(ATTRACTIONS_FALLBACK);
+            setData(ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a })));
           } else {
             const mapped = dbAttractions.map(a => ({
+              id: String(a.id),
               name: a.name || "",
               sub: a.description || a.sub || "",
               image: a.image_url || a.image || "/images/logo.png",
@@ -352,12 +358,12 @@ export function useGetAttractions() {
             setData(mapped);
           }
         } else {
-          setData(ATTRACTIONS_FALLBACK);
+          setData(ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a })));
         }
         setError(null);
       } catch (err: any) {
         console.error("Failed to fetch attractions from Supabase:", err);
-        setData(ATTRACTIONS_FALLBACK);
+        setData(ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a })));
       } finally {
         setIsLoading(false);
       }
@@ -699,27 +705,75 @@ export function useGetWishlist() {
 }
 
 export async function toggleWishlist(item: { id: string; title: string; itemType: string; imageUrl: string }) {
-  const stored = localStorage.getItem("kashi_wishlist");
-  let list = stored ? JSON.parse(stored) : [];
-  const existsLocal = list.some((x: any) => x.title === item.title);
-  if (existsLocal) {
-    list = list.filter((x: any) => x.title !== item.title);
+  // Use a unique entity-specific mutation key
+  const queueKey = `${item.itemType.toLowerCase()}:${item.id}`;
+
+  // 1. Capture the exact state of kashi_wishlist BEFORE our optimistic update
+  const previousStored = localStorage.getItem("kashi_wishlist");
+  const previousList: any[] = previousStored ? JSON.parse(previousStored) : [];
+
+  const isAttr = (t: string) => ["attraction", "temple", "ghat", "heritage", "boat", "photo spots", "facilities"].includes(t.toLowerCase());
+  const matchItem = (x: any) => {
+    const typeMatch = (isAttr(x.itemType) && isAttr(item.itemType)) || (x.itemType.toLowerCase() === item.itemType.toLowerCase());
+    return (String(x.id) === String(item.id)) || (x.title === item.title && typeMatch);
+  };
+
+  const existsBefore = previousList.some(matchItem);
+
+  // 2. Compute the new optimistic state
+  let optimisticList = [...previousList];
+  if (existsBefore) {
+    optimisticList = optimisticList.filter(x => !matchItem(x));
   } else {
-    list.push(item);
+    optimisticList.push(item);
   }
-  localStorage.setItem("kashi_wishlist", JSON.stringify(list));
+
+  // 3. Apply optimistic state immediately
+  localStorage.setItem("kashi_wishlist", JSON.stringify(optimisticList));
   window.dispatchEvent(new Event("wishlist_changed"));
 
+  // 4. Retrieve session safely at invocation time to capture the user identity
+  let session = null;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    session = sessionData.session;
+  } catch (err) {
+    console.warn("Could not retrieve Supabase session for sync:", err);
+  }
+
+  // If there is no authenticated session, we don't try to sync to database
+  if (!session?.user) {
+    return;
+  }
+
+  const mutationUserAuthId = session.user.id;
+
+  // 5. Append mutation execution task to the item's serial queue to preserve correct order
+  const existingQueue = itemSyncQueues.get(queueKey) || Promise.resolve();
+
+  const syncTask = async () => {
+    try {
+      // Pre-mutation session verification: verify same user is active
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.user || currentSession.user.id !== mutationUserAuthId) {
+        return; // Silent exit if logged out or active user changed
+      }
+
+      // Fetch user profile ID from users table
       const { data: profile } = await supabase
         .from("users")
         .select("id")
-        .eq("auth_user_id", session.user.id)
+        .eq("auth_user_id", currentSession.user.id)
         .single();
       
-      if (!profile?.id) throw new Error("Profile not found.");
+      if (!profile?.id) {
+        throw new Error("User profile not found in public database.");
+      }
+
+      // Check current localStorage state right before sync executes (in case of rapid clicks)
+      const currentStored = localStorage.getItem("kashi_wishlist");
+      const currentList: any[] = currentStored ? JSON.parse(currentStored) : [];
+      const shouldExist = currentList.some((x: any) => String(x.id) === String(item.id));
 
       if (item.itemType === "Food") {
         const { data: food } = await supabase
@@ -729,19 +783,27 @@ export async function toggleWishlist(item: { id: string; title: string; itemType
           .single();
         
         if (food?.id) {
-          if (existsLocal) {
-            await supabase
+          if (shouldExist) {
+            const { data: existingFav } = await supabase
+              .from("favorites")
+              .select("id")
+              .eq("user_id", profile.id)
+              .eq("food_id", food.id)
+              .maybeSingle();
+
+            if (!existingFav) {
+              const { error: insertError } = await supabase
+                .from("favorites")
+                .insert({ user_id: profile.id, food_id: food.id });
+              if (insertError) throw insertError;
+            }
+          } else {
+            const { error: deleteError } = await supabase
               .from("favorites")
               .delete()
               .eq("user_id", profile.id)
               .eq("food_id", food.id);
-          } else {
-            await supabase
-              .from("favorites")
-              .insert({
-                user_id: profile.id,
-                food_id: food.id
-              });
+            if (deleteError) throw deleteError;
           }
         }
       } else if (item.itemType === "Vendor") {
@@ -752,19 +814,27 @@ export async function toggleWishlist(item: { id: string; title: string; itemType
           .single();
         
         if (vendor?.id) {
-          if (existsLocal) {
-            await supabase
+          if (shouldExist) {
+            const { data: existingWish } = await supabase
+              .from("wishlists")
+              .select("id")
+              .eq("user_id", profile.id)
+              .eq("vendor_id", vendor.id)
+              .maybeSingle();
+
+            if (!existingWish) {
+              const { error: insertError } = await supabase
+                .from("wishlists")
+                .insert({ user_id: profile.id, vendor_id: vendor.id });
+              if (insertError) throw insertError;
+            }
+          } else {
+            const { error: deleteError } = await supabase
               .from("wishlists")
               .delete()
               .eq("user_id", profile.id)
               .eq("vendor_id", vendor.id);
-          } else {
-            await supabase
-              .from("wishlists")
-              .insert({
-                user_id: profile.id,
-                vendor_id: vendor.id
-              });
+            if (deleteError) throw deleteError;
           }
         }
       } else {
@@ -775,31 +845,88 @@ export async function toggleWishlist(item: { id: string; title: string; itemType
           .single();
         
         if (attr?.id) {
-          if (existsLocal) {
-            await supabase
+          if (shouldExist) {
+            const { data: existingFav } = await supabase
+              .from("favorites")
+              .select("id")
+              .eq("user_id", profile.id)
+              .eq("attraction_id", attr.id)
+              .maybeSingle();
+
+            if (!existingFav) {
+              const { error: insertError } = await supabase
+                .from("favorites")
+                .insert({ user_id: profile.id, attraction_id: attr.id });
+              if (insertError) throw insertError;
+            }
+          } else {
+            const { error: deleteError } = await supabase
               .from("favorites")
               .delete()
               .eq("user_id", profile.id)
               .eq("attraction_id", attr.id);
-          } else {
-            await supabase
-              .from("favorites")
-              .insert({
-                user_id: profile.id,
-                attraction_id: attr.id
-              });
+            if (deleteError) throw deleteError;
           }
         }
       }
-      window.dispatchEvent(new Event("wishlist_changed"));
+    } catch (err) {
+      console.warn(`Supabase sync failed for "${item.title}", checking rollback safety:`, err);
+      
+      // Post-mutation verification check before rollback
+      const { data: { session: errSession } } = await supabase.auth.getSession();
+      if (errSession?.user && errSession.user.id === mutationUserAuthId) {
+        // Rollback to previous state for this specific item in localStorage
+        const currentStored = localStorage.getItem("kashi_wishlist");
+        const currentList: any[] = currentStored ? JSON.parse(currentStored) : [];
+        
+        let rolledBackList = currentList.filter(x => !matchItem(x));
+        if (existsBefore) {
+          rolledBackList.push(item);
+        }
+        
+        localStorage.setItem("kashi_wishlist", JSON.stringify(rolledBackList));
+        window.dispatchEvent(new Event("wishlist_changed"));
+
+        // Display the toast feedback notification
+        toast({
+          title: "Sync Error",
+          description: `Failed to update wishlist for "${item.title}". Connection issue.`,
+          variant: "destructive",
+        });
+      }
     }
-  } catch (err) {
-    console.warn("Failed to sync wishlist changes to Supabase:", err);
-  }
+  };
+
+  const nextPromise = existingQueue.then(syncTask);
+  itemSyncQueues.set(queueKey, nextPromise);
+
+  nextPromise.finally(() => {
+    if (itemSyncQueues.get(queueKey) === nextPromise) {
+      itemSyncQueues.delete(queueKey);
+    }
+  });
 }
 
-export function isWishlistItem(title: string): boolean {
+export function isWishlistItem(idOrTitle: string, itemType?: string): boolean {
   const stored = localStorage.getItem("kashi_wishlist");
   const list = stored ? JSON.parse(stored) : [];
-  return list.some((x: any) => x.title === title);
+  return list.some((x: any) => {
+    // 1. Preferred comparison: entity type + database ID / virtual ID
+    if (itemType && x.id && idOrTitle) {
+      const isAttr = (t: string) => ["attraction", "temple", "ghat", "heritage", "boat", "photo spots", "facilities"].includes(t.toLowerCase());
+      const typeMatch = (isAttr(x.itemType) && isAttr(itemType)) || (x.itemType.toLowerCase() === itemType.toLowerCase());
+      
+      const idMatch = String(x.id) === String(idOrTitle);
+      if (idMatch && typeMatch) return true;
+    }
+    
+    // 2. Backward compatibility: fallback to matching title + type if IDs don't match or are name-based
+    if (itemType) {
+      const isAttr = (t: string) => ["attraction", "temple", "ghat", "heritage", "boat", "photo spots", "facilities"].includes(t.toLowerCase());
+      const typeMatch = (isAttr(x.itemType) && isAttr(itemType)) || (x.itemType.toLowerCase() === itemType.toLowerCase());
+      return x.title === idOrTitle && typeMatch;
+    }
+    
+    return String(x.id) === String(idOrTitle) || x.title === idOrTitle;
+  });
 }

@@ -145,7 +145,7 @@ export default function Attractions() {
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleWishlist({
-                            id: `attr_${attr.name}`,
+                            id: attr.id,
                             title: attr.name,
                             itemType: attr.type,
                             imageUrl: attr.image
@@ -157,8 +157,8 @@ export default function Attractions() {
                         <Bookmark 
                           className="w-3.5 h-3.5" 
                           style={{ 
-                            color: isWishlistItem(attr.name) ? "#C9A227" : "#FFFFFF",
-                            fill: isWishlistItem(attr.name) ? "#C9A227" : "none"
+                            color: isWishlistItem(attr.id, attr.type) ? "#C9A227" : "#FFFFFF",
+                            fill: isWishlistItem(attr.id, attr.type) ? "#C9A227" : "none"
                           }} 
                         />
                       </button>
