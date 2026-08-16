@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { Layout } from "@/components/layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -136,6 +137,47 @@ export default function CommunityPage() {
   useEffect(() => {
     localStorage.setItem("kashi_community_posts", JSON.stringify(posts));
   }, [posts]);
+
+  // Fetch posts from Supabase database (with graceful fallback)
+  useEffect(() => {
+    const syncDbPosts = async () => {
+      try {
+        const { data: dbPosts, error } = await supabase
+          .from("community_posts")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (dbPosts && dbPosts.length > 0) {
+          const mapped = dbPosts.map((p: any) => ({
+            id: String(p.id),
+            author: p.author_name || "Aditya Roy (You)",
+            avatar: p.author_avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Aditya",
+            isVerified: !!p.is_verified,
+            category: p.category || "Story",
+            time: p.created_at ? new Date(p.created_at).toLocaleDateString() : "Just now",
+            location: p.location || "Varanasi",
+            title: p.title || "",
+            story: p.content || p.story || "",
+            images: p.images && p.images.length > 0 ? p.images : ["/images/ghats-night.png"],
+            likes: Number(p.likes || 0),
+            hasLiked: false,
+            comments: p.comments || [],
+            bookmarks: Number(p.bookmarks || 0),
+            hasBookmarked: false,
+            tags: p.tags && p.tags.length > 0 ? p.tags : ["#ExploreKashi"],
+            isFollowing: false
+          }));
+          setPosts(mapped);
+        }
+      } catch (err) {
+        console.warn("Supabase community_posts query failed. Operating in local-offline storage mode:", err);
+      }
+    };
+    syncDbPosts();
+  }, []);
+
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -259,6 +301,22 @@ export default function CommunityPage() {
     };
 
     setPosts(prev => [newPostItem, ...prev]);
+
+    // Async sync to Supabase table
+    supabase.from("community_posts").insert({
+      title: newPostItem.title,
+      content: newPostItem.story,
+      category: newPostItem.category,
+      location: newPostItem.location,
+      images: newPostItem.images,
+      tags: newPostItem.tags,
+      author_name: newPostItem.author,
+      author_avatar: newPostItem.avatar,
+    }).then(({ error }) => {
+      if (error) {
+        console.warn("Could not write new post to Supabase database (table may not exist):", error);
+      }
+    });
 
     // Reset Form
     setNewTitle("");

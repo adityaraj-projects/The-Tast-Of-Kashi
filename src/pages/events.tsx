@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { Layout } from "@/components/layout";
 import { useGetEvents } from "@/hooks/api-hooks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -155,17 +156,74 @@ export default function Events() {
     const stored = localStorage.getItem("kashi_event_bookings");
     return stored ? JSON.parse(stored) : [];
   });
+  const [profileId, setProfileId] = useState<string | null>(null);
 
-  const handleBookEvent = (id: string) => {
+  // Sync profile & bookings from database
+  useEffect(() => {
+    const syncBookings = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("users")
+            .select("id")
+            .eq("auth_user_id", session.user.id)
+            .single();
+
+          if (profile?.id) {
+            setProfileId(profile.id);
+            const { data: dbBookings, error } = await supabase
+              .from("event_bookings")
+              .select("event_id")
+              .eq("user_id", profile.id);
+
+            if (error) throw error;
+            if (dbBookings) {
+              const ids = dbBookings.map((b: any) => b.event_id);
+              setBookings(ids);
+              localStorage.setItem("kashi_event_bookings", JSON.stringify(ids));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Supabase event_bookings query failed. Operating in offline local storage mode:", err);
+      }
+    };
+    syncBookings();
+  }, []);
+
+  const handleBookEvent = async (id: string) => {
     const updated = [...bookings, id];
     setBookings(updated);
     localStorage.setItem("kashi_event_bookings", JSON.stringify(updated));
+
+    if (profileId) {
+      try {
+        await supabase.from("event_bookings").insert({
+          user_id: profileId,
+          event_id: id
+        });
+      } catch (err) {
+        console.warn("Could not sync new event booking to Supabase (table may not exist):", err);
+      }
+    }
   };
 
-  const handleCancelBooking = (id: string) => {
+  const handleCancelBooking = async (id: string) => {
     const updated = bookings.filter(b => b !== id);
     setBookings(updated);
     localStorage.setItem("kashi_event_bookings", JSON.stringify(updated));
+
+    if (profileId) {
+      try {
+        await supabase.from("event_bookings")
+          .delete()
+          .eq("user_id", profileId)
+          .eq("event_id", id);
+      } catch (err) {
+        console.warn("Could not sync event booking cancellation to Supabase:", err);
+      }
+    }
   };
 
   const handleEventClick = (event: any) => {

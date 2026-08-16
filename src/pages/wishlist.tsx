@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { Layout } from "@/components/layout";
 import { useGetWishlist } from "@/hooks/api-hooks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -76,6 +77,71 @@ export default function Wishlist() {
   const [travelStyle, setTravelStyle] = useState("spiritual");
   const [generatedItinerary, setGeneratedItinerary] = useState<Itinerary | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Sync profile, expenses & memories from database
+  const [profileId, setProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const syncDbData = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("users")
+            .select("id")
+            .eq("auth_user_id", session.user.id)
+            .single();
+
+          if (profile?.id) {
+            setProfileId(profile.id);
+            
+            // Sync expenses
+            const { data: dbExpenses } = await supabase
+              .from("traveler_expenses")
+              .select("*")
+              .eq("user_id", profile.id);
+            
+            if (dbExpenses && dbExpenses.length > 0) {
+              const mappedExpenses = dbExpenses.map((e: any) => ({
+                id: String(e.id),
+                desc: e.title,
+                amount: Number(e.amount),
+                category: e.category
+              }));
+              setExpenses(mappedExpenses);
+              localStorage.setItem("kashi_expenses", JSON.stringify(mappedExpenses));
+            }
+
+            // Sync memories
+            const { data: dbMemories } = await supabase
+              .from("traveler_memories")
+              .select("*")
+              .eq("user_id", profile.id);
+            
+            if (dbMemories && dbMemories.length > 0) {
+              const mappedMemories = dbMemories.map((m: any) => ({
+                id: String(m.id),
+                title: m.title,
+                date: m.memory_date,
+                time: "Just now",
+                location: "Varanasi",
+                image: m.image_url || "/images/ghats-night.png",
+                gps: "25.2980° N, 83.0084° E",
+                mood: "Inspired",
+                category: "Travel",
+                diaryNotes: m.description || ""
+              }));
+              setMemories(mappedMemories);
+              localStorage.setItem("kashi_memories", JSON.stringify(mappedMemories));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Supabase database sync failed in wishlist tab. Operating in offline storage mode:", err);
+      }
+    };
+    syncDbData();
+  }, []);
 
   // Expenses State
   const [expenses, setExpenses] = useState<Array<{ id: string; desc: string; amount: number; category: string }>>(() => {
@@ -203,6 +269,17 @@ export default function Wishlist() {
     const updated = [...expenses, newExp];
     setExpenses(updated);
     localStorage.setItem("kashi_expenses", JSON.stringify(updated));
+
+    if (profileId) {
+      supabase.from("traveler_expenses").insert({
+        user_id: profileId,
+        title: newExp.desc,
+        amount: newExp.amount,
+        category: newExp.category
+      }).then(({ error }) => {
+        if (error) console.warn("Could not sync expense to Supabase:", error);
+      });
+    }
     
     setNewExpDesc("");
     setNewExpAmount("");
@@ -210,9 +287,19 @@ export default function Wishlist() {
 
   // Delete Expense
   const deleteExpense = (id: string) => {
+    const target = expenses.find(e => e.id === id);
     const updated = expenses.filter(e => e.id !== id);
     setExpenses(updated);
     localStorage.setItem("kashi_expenses", JSON.stringify(updated));
+
+    if (profileId && target) {
+      const query = id.includes("exp_")
+        ? supabase.from("traveler_expenses").delete().eq("user_id", profileId).eq("title", target.desc)
+        : supabase.from("traveler_expenses").delete().eq("id", id);
+      query.then(({ error }) => {
+        if (error) console.warn("Could not delete expense from Supabase:", error);
+      });
+    }
   };
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -264,6 +351,18 @@ export default function Wishlist() {
     };
 
     saveMemories([newMem, ...memories]);
+
+    if (profileId) {
+      supabase.from("traveler_memories").insert({
+        user_id: profileId,
+        title: newMem.title,
+        description: newMem.diaryNotes,
+        image_url: newMem.image,
+        memory_date: newMem.date
+      }).then(({ error }) => {
+        if (error) console.warn("Could not sync memory to Supabase:", error);
+      });
+    }
     
     // Reset camera form
     setCapturedMockImage(null);
@@ -1111,6 +1210,15 @@ export default function Wishlist() {
                               onClick={() => {
                                 const updated = memories.filter(item => item.id !== m.id);
                                 saveMemories(updated);
+
+                                if (profileId) {
+                                  const query = m.id.includes("mem_")
+                                    ? supabase.from("traveler_memories").delete().eq("user_id", profileId).eq("title", m.title)
+                                    : supabase.from("traveler_memories").delete().eq("id", m.id);
+                                  query.then(({ error }) => {
+                                    if (error) console.warn("Could not delete memory from Supabase:", error);
+                                  });
+                                }
                               }}
                               className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-black/60 text-white/60 hover:text-red-400 border border-white/10 flex items-center justify-center cursor-pointer transition-all hover:bg-black/80"
                             >
