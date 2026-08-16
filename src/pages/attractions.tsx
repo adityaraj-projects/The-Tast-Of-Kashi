@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Layout } from "@/components/layout";
 import { motion } from "framer-motion";
 import { Star, Heart, Bookmark, Search, SlidersHorizontal, Landmark, MapPin, Clock } from "lucide-react";
-import { openHistory } from "@/components/HistoryDialog";
+import { openHistory } from "@/lib/events";
 import { toggleWishlist, useIsWishlisted, useGetAttractions } from "@/hooks/api-hooks";
 
 const TYPES = ["All", "Temple", "Ghat", "Heritage", "Boat"];

@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchBar } from "./SearchBar";
-import { HistoryDialog, openHistory } from "./HistoryDialog";
+const HistoryDialog = lazy(() => import("./HistoryDialog").then(module => ({ default: module.HistoryDialog })));
 import {
   Dialog,
   DialogContent,
@@ -586,7 +586,9 @@ export function Layout({ children }: LayoutProps) {
         </DialogContent>
       </Dialog>
 
-      <HistoryDialog />
+      <Suspense fallback={null}>
+        <HistoryDialog />
+      </Suspense>
     </div>
   );
 }

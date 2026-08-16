@@ -9,7 +9,7 @@ import {
   Sparkles, Navigation, Bot, PhoneCall, AlertTriangle, Compass
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { openHistory } from "@/components/HistoryDialog";
+import { openHistory } from "@/lib/events";
 import { toggleWishlist, useIsWishlisted } from "@/hooks/api-hooks";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SearchBar } from "@/components/SearchBar";
@@ -74,6 +74,43 @@ function GoldText({ children }: { children: React.ReactNode }) {
       WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
     }}>{children}</span>
   );
+}
+
+function getRecommendation() {
+  const hours = new Date().getHours();
+  if (hours >= 5 && hours < 11) {
+    return {
+      title: "🌅 Sunrise Spiritual Recommendation",
+      text: "Morning Ganga current is calm. Head to Assi Ghat for Subah-e-Banaras, followed by warm Kachori breakfast at Ram Bhandar.",
+      link: "/map?focus=assi-ghat",
+      btnText: "Explore Assi Ghat",
+      bg: "linear-gradient(to right, rgba(212,175,55,0.15), rgba(232,117,10,0.08))"
+    };
+  } else if (hours >= 11 && hours < 16) {
+    return {
+      title: "🍲 Afternoon Food & Shelter",
+      text: "The sun is peaking. Take shelter inside Swarved Mahamandir or try a cooling sweet Banarasi Lassi at Blue Lassi shop.",
+      link: "/foods",
+      btnText: "Explore Foods",
+      bg: "linear-gradient(to right, rgba(6,182,212,0.12), rgba(212,175,55,0.08))"
+    };
+  } else if (hours >= 16 && hours < 21) {
+    return {
+      title: "🎆 Evening Aarti Special",
+      text: "Evening fire rituals are starting soon. Secure boat seating at Dashashwamedh Ghat or board the luxury Alaknanda cruise liner.",
+      link: "/map?focus=dashashwamedh-ghat",
+      btnText: "Aarti Map Details",
+      bg: "linear-gradient(to right, rgba(168,85,247,0.15), rgba(232,117,10,0.08))"
+    };
+  } else {
+    return {
+      title: "🌙 Late Night Delicacies",
+      text: "Winding down in Kashi? Try traditional warm Rabri Jalebi sweets or browse historical storytelling before bed.",
+      link: "/stories",
+      btnText: "Read Legends",
+      bg: "linear-gradient(to right, rgba(14,116,144,0.12), rgba(15,10,5,0.3))"
+    };
+  }
 }
 
 export default function Dashboard() {
@@ -161,43 +198,6 @@ export default function Dashboard() {
   }, []);
 
   // Recommendation engine calculations
-  const getRecommendation = () => {
-    const hours = new Date().getHours();
-    if (hours >= 5 && hours < 11) {
-      return {
-        title: "🌅 Sunrise Spiritual Recommendation",
-        text: "Morning Ganga current is calm. Head to Assi Ghat for Subah-e-Banaras, followed by warm Kachori breakfast at Ram Bhandar.",
-        link: "/map?focus=assi-ghat",
-        btnText: "Explore Assi Ghat",
-        bg: "linear-gradient(to right, rgba(212,175,55,0.15), rgba(232,117,10,0.08))"
-      };
-    } else if (hours >= 11 && hours < 16) {
-      return {
-        title: "🍲 Afternoon Food & Shelter",
-        text: "The sun is peaking. Take shelter inside Swarved Mahamandir or try a cooling sweet Banarasi Lassi at Blue Lassi shop.",
-        link: "/foods",
-        btnText: "Explore Foods",
-        bg: "linear-gradient(to right, rgba(6,182,212,0.12), rgba(212,175,55,0.08))"
-      };
-    } else if (hours >= 16 && hours < 21) {
-      return {
-        title: "🎆 Evening Aarti Special",
-        text: "Evening fire rituals are starting soon. Secure boat seating at Dashashwamedh Ghat or board the luxury Alaknanda cruise liner.",
-        link: "/map?focus=dashashwamedh-ghat",
-        btnText: "Aarti Map Details",
-        bg: "linear-gradient(to right, rgba(168,85,247,0.15), rgba(232,117,10,0.08))"
-      };
-    } else {
-      return {
-        title: "🌙 Late Night Delicacies",
-        text: "Winding down in Kashi? Try traditional warm Rabri Jalebi sweets or browse historical storytelling before bed.",
-        link: "/stories",
-        btnText: "Read Legends",
-        bg: "linear-gradient(to right, rgba(14,116,144,0.12), rgba(15,10,5,0.3))"
-      };
-    }
-  };
-
   const rec = getRecommendation();
 
   const toggleEventBookmark = (e: React.MouseEvent, eventName: string) => {
@@ -449,7 +449,7 @@ export default function Dashboard() {
                     className="flex-shrink-0 w-[140px] rounded-2xl overflow-hidden group cursor-pointer transition-all hover:scale-[1.02]"
                     style={{ background: "var(--app-card-bg)", border: `1px solid var(--app-card-border)`, boxShadow: "0 4px 16px rgba(0,0,0,0.5)" }}>
                     <div className="relative h-[102px] overflow-hidden">
-                      <img src={food.image} alt={food.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={food.image} alt={food.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.55) 0%,transparent 50%)" }} />
                       <DashboardWishlistButton item={food} itemType="Food" />
                     </div>
@@ -485,7 +485,7 @@ export default function Dashboard() {
                     className="flex-shrink-0 w-[155px] rounded-2xl overflow-hidden group cursor-pointer transition-all hover:scale-[1.02]"
                     style={{ background: "var(--app-card-bg)", border: `1px solid var(--app-card-border)`, boxShadow: "0 4px 16px rgba(0,0,0,0.5)" }}>
                     <div className="relative h-[96px] overflow-hidden">
-                      <img src={attr.image} alt={attr.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={attr.image} alt={attr.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.80) 0%,transparent 55%)" }} />
                       <div className="absolute bottom-2 left-2.5 flex items-center gap-1">
                         <Star className="w-3 h-3 fill-[#C9A227]" style={{ color: "#C9A227" }} />
@@ -515,7 +515,7 @@ export default function Dashboard() {
                 </div>
                 <div className="p-3">
                   <div className="relative h-[100px] rounded-xl overflow-hidden mb-2.5">
-                    <img src="/images/kashi-vishwanath.png" alt="Story" className="w-full h-full object-cover" />
+                    <img src="/images/kashi-vishwanath.png" alt="Story" loading="lazy" className="w-full h-full object-cover" />
                     <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.92) 0%,transparent 50%)" }} />
                     <p className="absolute bottom-2 left-2.5 right-2.5 font-serif text-[11px] font-bold text-white leading-tight">The Legend of Kashi Vishwanath</p>
                   </div>
@@ -541,7 +541,7 @@ export default function Dashboard() {
                 </div>
                 <div className="p-3">
                   <div className="relative h-[100px] rounded-xl overflow-hidden mb-2.5">
-                    <img src="/images/banarasi-chaat.png" alt="Vendor" className="w-full h-full object-cover" />
+                    <img src="/images/banarasi-chaat.png" alt="Vendor" loading="lazy" className="w-full h-full object-cover" />
                     <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.85) 0%,transparent 50%)" }} />
                   </div>
                   <p className="font-semibold text-[12.5px] text-foreground">Kashi Chat Bhandar</p>
@@ -598,7 +598,7 @@ export default function Dashboard() {
 
             {/* Quote bar */}
             <div className="relative rounded-2xl overflow-hidden h-[72px]">
-              <img src="/images/ganga-aarti.png" alt="Kashi" className="w-full h-full object-cover" style={{ objectPosition: "center 40%" }} />
+              <img src="/images/ganga-aarti.png" alt="Kashi" loading="lazy" className="w-full h-full object-cover" style={{ objectPosition: "center 40%" }} />
               <div className="absolute inset-0" style={{ background: "rgba(3,2,0,0.82)" }} />
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
                 <p className="font-serif text-[13px] italic leading-relaxed" style={{ color: "rgba(255,255,255,0.88)" }}>

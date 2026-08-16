@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, MapPin, Landmark, Utensils, Flame, Sparkles, ChevronRight, X } from "lucide-react";
-import { openHistory } from "./HistoryDialog";
+import { openHistory } from "@/lib/events";
 
 interface SearchItem {
   name: string;

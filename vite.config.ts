@@ -17,7 +17,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-            handler: "CacheFirst",
+            handler: "StaleWhileRevalidate",
             options: {
               cacheName: "kashi-images-cache",
               expiration: {

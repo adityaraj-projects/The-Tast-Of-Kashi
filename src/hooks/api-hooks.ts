@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase, isMockMode } from "@/lib/supabaseClient";
 import { STORIES_DATA } from "@/lib/stories-data";
 import { toast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 // Module-level map to track active mutations per item title to prevent race conditions and duplicate operations.
 const itemSyncQueues = new Map<string, Promise<void>>();
@@ -282,96 +283,68 @@ export const ATTRACTIONS_FALLBACK = [
 ];
 
 export function useGetFoods() {
-  const [data, setData] = useState<any[]>(() => {
-    return FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f }));
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchFoods = async () => {
-      try {
-        const { data: dbFoods, error: dbError } = await supabase.from("foods").select("*");
-        if (dbError) throw dbError;
-        if (dbFoods && dbFoods.length > 0) {
-          const hasInvalid = dbFoods.some(f => !STORIES_DATA[f.name] || f.name.toLowerCase().includes("chicken") || f.name.toLowerCase().includes("tikka") || f.name.toLowerCase().includes("patty") || f.name.toLowerCase().includes("basmati"));
-          if (hasInvalid) {
-            setData(FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f })));
-          } else {
-            const mapped = dbFoods.map(f => ({
-              id: String(f.id),
-              name: f.name || "",
-              tagline: f.tagline || f.description || "",
-              image: f.image_url || f.imageUrl || "/images/logo.png",
-              rating: Number(f.rating || 4.7),
-              price: Number(f.price || 40),
-              category: f.category || "Street Food",
-              isVeg: f.is_veg !== false,
-              spice: f.spice || "Medium"
-            }));
-            setData(mapped);
-          }
+  return useQuery({
+    queryKey: ["foods"],
+    queryFn: async () => {
+      const { data: dbFoods, error: dbError } = await supabase
+        .from("foods")
+        .select("id, name, tagline, image_url, rating, price, category, is_veg, spice");
+      if (dbError) throw dbError;
+      if (dbFoods && dbFoods.length > 0) {
+        const hasInvalid = dbFoods.some((f: any) => !STORIES_DATA[f.name] || f.name.toLowerCase().includes("chicken") || f.name.toLowerCase().includes("tikka") || f.name.toLowerCase().includes("patty") || f.name.toLowerCase().includes("basmati"));
+        if (hasInvalid) {
+          return FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f }));
         } else {
-          setData(FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f })));
+          return dbFoods.map((f: any) => ({
+            id: String(f.id),
+            name: f.name || "",
+            tagline: f.tagline || f.description || "",
+            image: f.image_url || f.imageUrl || "/images/logo.png",
+            rating: Number(f.rating || 4.7),
+            price: Number(f.price || 40),
+            category: f.category || "Street Food",
+            isVeg: f.is_veg !== false,
+            spice: f.spice || "Medium"
+          }));
         }
-        setError(null);
-      } catch (err: any) {
-        console.error("Failed to fetch foods from Supabase:", err);
-        setData(FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f })));
-      } finally {
-        setIsLoading(false);
       }
-    };
-    fetchFoods();
-  }, []);
-
-  return { data, isLoading, error };
+      return FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f }));
+    },
+    placeholderData: FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f })),
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 export function useGetAttractions() {
-  const [data, setData] = useState<any[]>(() => {
-    return ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a }));
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchAttractions = async () => {
-      try {
-        const { data: dbAttractions, error: dbError } = await supabase.from("attractions").select("*");
-        if (dbError) throw dbError;
-        if (dbAttractions && dbAttractions.length > 0) {
-          const hasInvalid = dbAttractions.some(a => !STORIES_DATA[a.name] || a.name.toLowerCase().includes("lucknow") || a.name.toLowerCase().includes("stroll") || a.name.toLowerCase().includes("jaipur"));
-          if (hasInvalid) {
-            setData(ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a })));
-          } else {
-            const mapped = dbAttractions.map(a => ({
-              id: String(a.id),
-              name: a.name || "",
-              sub: a.description || a.sub || "",
-              image: a.image_url || a.image || "/images/logo.png",
-              rating: Number(a.rating || 4.8),
-              type: a.type || "Ghat",
-              timing: a.timing || "Open All Day",
-              location: a.location || "Varanasi"
-            }));
-            setData(mapped);
-          }
+  return useQuery({
+    queryKey: ["attractions"],
+    queryFn: async () => {
+      const { data: dbAttractions, error: dbError } = await supabase
+        .from("attractions")
+        .select("id, name, description, image_url, rating, type, timing, location");
+      if (dbError) throw dbError;
+      if (dbAttractions && dbAttractions.length > 0) {
+        const hasInvalid = dbAttractions.some((a: any) => !STORIES_DATA[a.name] || a.name.toLowerCase().includes("lucknow") || a.name.toLowerCase().includes("stroll") || a.name.toLowerCase().includes("jaipur"));
+        if (hasInvalid) {
+          return ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a }));
         } else {
-          setData(ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a })));
+          return dbAttractions.map((a: any) => ({
+            id: String(a.id),
+            name: a.name || "",
+            sub: a.description || a.sub || "",
+            image: a.image_url || a.image || "/images/logo.png",
+            rating: Number(a.rating || 4.8),
+            type: a.type || "Ghat",
+            timing: a.timing || "Open All Day",
+            location: a.location || "Varanasi"
+          }));
         }
-        setError(null);
-      } catch (err: any) {
-        console.error("Failed to fetch attractions from Supabase:", err);
-        setData(ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a })));
-      } finally {
-        setIsLoading(false);
       }
-    };
-    fetchAttractions();
-  }, []);
-
-  return { data, isLoading, error };
+      return ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a }));
+    },
+    placeholderData: ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a })),
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 export function useGetUserJourney() {

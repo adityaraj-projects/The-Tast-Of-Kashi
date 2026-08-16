@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Layout } from "@/components/layout";
 import { motion } from "framer-motion";
 import { Star, Heart, Bookmark, Search, SlidersHorizontal, Flame } from "lucide-react";
-import { openHistory } from "@/components/HistoryDialog";
+import { openHistory } from "@/lib/events";
 import { toggleWishlist, useIsWishlisted, useGetFoods } from "@/hooks/api-hooks";
 
 const CATEGORIES = ["All", "Street Food", "Sweets", "Beverages", "Breakfast", "Desserts", "Specialty", "Winter Special"];
