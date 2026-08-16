@@ -246,7 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             full_name: data.fullName,
             fullName: data.fullName,
             username: data.username,
-            phone: data.phone,
+            phone: data.phone && data.phone.trim() ? data.phone.trim() : null,
           }
         }
       });

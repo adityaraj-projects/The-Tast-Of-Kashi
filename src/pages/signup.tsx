@@ -12,12 +12,25 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/hooks/useAuth";
 
-const signupSchema = z
+export const signupSchema = z
   .object({
-    fullName: z.string().min(1, { message: "Full name is required" }),
-    username: z.string().min(3, { message: "Username must be at least 3 characters" }),
+    fullName: z
+      .string()
+      .transform((val) => val.replace(/\s+/g, " ").trim())
+      .refine((val) => val.length >= 1, { message: "Full name is required" }),
+    username: z
+      .string()
+      .transform((val) => val.toLowerCase().trim())
+      .refine((val) => val.length >= 3, { message: "Username must be at least 3 characters" }),
     email: z.string().email({ message: "Invalid email address" }),
-    phone: z.string().min(10, { message: "Phone number must be at least 10 digits" }),
+    phone: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .transform((val) => (val ? val.trim() : ""))
+      .refine((val) => !val || val.length >= 10, {
+        message: "Phone number must be at least 10 digits",
+      }),
     password: z.string().min(6, { message: "Password must be at least 6 characters" }),
     confirmPassword: z.string(),
     agreeTerms: z.boolean().refine((val) => val === true, {
