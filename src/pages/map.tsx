@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Layout } from "@/components/layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Maximize2, MapPin, Plus, Minus, Landmark, UtensilsCrossed, Building2, 
   Search, Star, Compass, ArrowRight, Heart, Share2, Navigation, Volume2, 
-  VolumeX, Sparkles, X, Sun, Users, Flame, Wind, Clock, ChevronLeft, ChevronRight 
+  VolumeX, Sparkles, X, Sun, Users, Flame, Wind, Clock, ChevronLeft, ChevronRight,
+  Loader2, AlertTriangle, RefreshCw
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { STORIES_DATA } from "@/lib/stories-data";
@@ -173,6 +174,79 @@ const PLACEHOLDER_PROMPTS = [
   "Where to find authentic kachori?"
 ];
 
+// Helper function to dynamically load Leaflet assets with timeout and retry support
+function loadLeafletAssets(timeoutMs = 10000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") {
+      reject(new Error("Browser environment required."));
+      return;
+    }
+
+    if ((window as any).L) {
+      resolve();
+      return;
+    }
+
+    // 1. Load Leaflet CSS
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      link.id = "leaflet-css";
+      link.crossOrigin = "";
+      document.head.appendChild(link);
+    }
+
+    // 2. Remove any pre-existing script tag that failed or is stale
+    const oldScript = document.getElementById("leaflet-js");
+    if (oldScript) {
+      oldScript.remove();
+    }
+
+    // 3. Create and inject Leaflet JS Script
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    script.id = "leaflet-js";
+    script.crossOrigin = "";
+
+    let timeoutId: number;
+    let finished = false;
+
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      script.onload = null;
+      script.onerror = null;
+    };
+
+    script.onload = () => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      if ((window as any).L) {
+        resolve();
+      } else {
+        reject(new Error("Leaflet script loaded but window.L is undefined"));
+      }
+    };
+
+    script.onerror = () => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(new Error("Failed to load Leaflet script from CDN"));
+    };
+
+    document.head.appendChild(script);
+
+    timeoutId = window.setTimeout(() => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(new Error("Leaflet CDN load timed out"));
+    }, timeoutMs);
+  });
+}
+
 export default function MapExplorerPage() {
   const [filter, setFilter] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -209,6 +283,51 @@ export default function MapExplorerPage() {
   const activeMarkers = useRef<Record<string, any>>({});
   const activePolyline = useRef<any>(null);
 
+  // Mounted safety guard & loading state logic
+  const isMounted = useRef(true);
+  const [leafletStatus, setLeafletStatus] = useState<"loading" | "ready" | "error">(() => {
+    return (typeof window !== "undefined" && (window as any).L) ? "ready" : "loading";
+  });
+  const [isRetrying, setIsRetrying] = useState(false);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const initLeafletScript = useCallback(async (isRetryAction = false) => {
+    if (isRetryAction) setIsRetrying(true);
+    setLeafletStatus("loading");
+
+    try {
+      await loadLeafletAssets(10000);
+      if (isMounted.current) {
+        setLeafletStatus("ready");
+      }
+    } catch (err) {
+      console.warn("Leaflet asset load failed:", err);
+      if (isMounted.current) {
+        setLeafletStatus("error");
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsRetrying(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (leafletStatus === "loading") {
+      initLeafletScript(false);
+    }
+  }, [initLeafletScript, leafletStatus]);
+
+  const triggerRetry = () => {
+    initLeafletScript(true);
+  };
+
   // Filter markers list based on search or category
   const filteredMarkers = MARKERS.filter(m => {
     const matchesFilter = filter === "All" || m.type === filter;
@@ -228,6 +347,8 @@ export default function MapExplorerPage() {
 
   // Initialize Leaflet Map
   useEffect(() => {
+    if (leafletStatus !== "ready") return;
+
     const L = (window as any).L;
     if (!L || !mapRef.current || leafletMap.current) return;
 
@@ -236,30 +357,52 @@ export default function MapExplorerPage() {
       ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
-    leafletMap.current = L.map(mapRef.current, {
-      center: [25.3176, 83.0062],
-      zoom: 13,
-      zoomControl: false,
-      attributionControl: false
-    });
+    try {
+      leafletMap.current = L.map(mapRef.current, {
+        center: [25.3176, 83.0062],
+        zoom: 13,
+        zoomControl: false,
+        attributionControl: false
+      });
 
-    L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(leafletMap.current);
-    markersGroup.current = L.layerGroup().addTo(leafletMap.current);
+      L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(leafletMap.current);
+      markersGroup.current = L.layerGroup().addTo(leafletMap.current);
 
-    renderMarkers();
+      renderMarkers();
 
-    // Focus link helper
-    setTimeout(() => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const focusId = searchParams.get("focus");
-      if (focusId) {
-        setActiveFocusId(focusId);
-        const markerObj = MARKERS.find(m => m.id === focusId);
-        if (markerObj) setSelectedPlace(markerObj);
-        focusLocation(focusId);
+      // Focus link helper
+      const timerId = setTimeout(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const focusId = searchParams.get("focus");
+        if (focusId) {
+          setActiveFocusId(focusId);
+          const markerObj = MARKERS.find(m => m.id === focusId);
+          if (markerObj) setSelectedPlace(markerObj);
+          focusLocation(focusId);
+        }
+      }, 500);
+
+      return () => {
+        clearTimeout(timerId);
+        if (leafletMap.current) {
+          try {
+            leafletMap.current.remove();
+          } catch (e) {
+            console.warn("Leaflet map removal error during cleanup:", e);
+          }
+          leafletMap.current = null;
+        }
+        markersGroup.current = null;
+        activeMarkers.current = {};
+        activePolyline.current = null;
+      };
+    } catch (err) {
+      console.error("Leaflet map initialization crash:", err);
+      if (isMounted.current) {
+        setLeafletStatus("error");
       }
-    }, 500);
-  }, []);
+    }
+  }, [leafletStatus]);
 
   // Change theme layer dynamically
   useEffect(() => {
@@ -524,7 +667,42 @@ export default function MapExplorerPage() {
       <div className="w-full h-[calc(100vh-64px)] relative flex overflow-hidden bg-[#0d0b08]">
         
         {/* The Leaflet interactive map */}
-        <div ref={mapRef} className="w-full h-full z-0 absolute inset-0" style={{ background: "#080502" }} />
+        <div ref={mapRef} className="w-full h-full z-0 absolute inset-0 bg-[#080502]" style={{ background: "#080502" }}>
+          {leafletStatus === "loading" && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0d0b08]/90 backdrop-blur-sm pointer-events-auto">
+              <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mb-3" />
+              <p className="text-white/60 text-xs font-medium">Loading Map Engine...</p>
+            </div>
+          )}
+          {leafletStatus === "error" && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0d0b08]/95 backdrop-blur-md px-6 pointer-events-auto text-center">
+              <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-400" />
+              </div>
+              <h3 className="text-white text-base font-serif font-bold mb-2">Map Engine Offline</h3>
+              <p className="text-white/60 text-xs max-w-xs leading-relaxed mb-5">
+                We couldn't initialize the map engine. This can happen on slow connections or when access to the script CDN is restricted.
+              </p>
+              <button
+                onClick={triggerRetry}
+                disabled={isRetrying}
+                className="px-5 py-2.5 bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black text-xs font-bold rounded-xl active:scale-95 transition-all shadow-md shadow-[#D4AF37]/10 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRetrying ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Re-connecting...</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Retry Loading Map</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Collapsible Floating Left Panel (Apple Maps style overlay) */}
         <AnimatePresence>
