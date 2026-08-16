@@ -930,3 +930,19 @@ export function isWishlistItem(idOrTitle: string, itemType?: string): boolean {
     return String(x.id) === String(idOrTitle) || x.title === idOrTitle;
   });
 }
+
+export function useIsWishlisted(id: string, itemType: string): boolean {
+  const [isSaved, setIsSaved] = useState(() => isWishlistItem(id, itemType));
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setIsSaved(isWishlistItem(id, itemType));
+    };
+    window.addEventListener("wishlist_changed", handleUpdate);
+    return () => {
+      window.removeEventListener("wishlist_changed", handleUpdate);
+    };
+  }, [id, itemType]);
+
+  return isSaved;
+}

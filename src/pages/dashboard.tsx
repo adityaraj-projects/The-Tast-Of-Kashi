@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { openHistory } from "@/components/HistoryDialog";
-import { toggleWishlist, isWishlistItem } from "@/hooks/api-hooks";
+import { toggleWishlist, useIsWishlisted } from "@/hooks/api-hooks";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SearchBar } from "@/components/SearchBar";
 
@@ -451,27 +451,7 @@ export default function Dashboard() {
                     <div className="relative h-[102px] overflow-hidden">
                       <img src={food.image} alt={food.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(4,2,0,0.55) 0%,transparent 50%)" }} />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist({
-                            id: food.id,
-                            title: food.name,
-                            itemType: "Food",
-                            imageUrl: food.image
-                          });
-                        }}
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                        style={{ background: "rgba(0,0,0,0.55)" }}
-                      >
-                        <Bookmark
-                          className="w-3 h-3"
-                          style={{
-                            color: isWishlistItem(food.id, "Food") ? "#C9A227" : "#FFFFFF",
-                            fill: isWishlistItem(food.id, "Food") ? "#C9A227" : "none"
-                          }}
-                        />
-                      </button>
+                      <DashboardWishlistButton item={food} itemType="Food" />
                     </div>
                     <div className="p-2.5">
                       <p className="font-semibold text-[11.5px] text-foreground leading-tight">{food.name}</p>
@@ -511,27 +491,7 @@ export default function Dashboard() {
                         <Star className="w-3 h-3 fill-[#C9A227]" style={{ color: "#C9A227" }} />
                         <span className="text-[11px] font-medium text-white">{attr.rating}</span>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist({
-                            id: attr.id,
-                            title: attr.name,
-                            itemType: attr.name.includes("Ghat") ? "Ghat" : "Temple",
-                            imageUrl: attr.image
-                          });
-                        }}
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                        style={{ background: "rgba(0,0,0,0.55)" }}
-                      >
-                        <Bookmark
-                          className="w-3 h-3"
-                          style={{
-                            color: isWishlistItem(attr.id, attr.name.includes("Ghat") ? "Ghat" : "Temple") ? "#C9A227" : "#FFFFFF",
-                            fill: isWishlistItem(attr.id, attr.name.includes("Ghat") ? "Ghat" : "Temple") ? "#C9A227" : "none"
-                          }}
-                        />
-                      </button>
+                      <DashboardWishlistButton item={attr} itemType={attr.name.includes("Ghat") ? "Ghat" : "Temple"} />
                     </div>
                     <div className="p-2.5">
                       <p className="font-semibold text-[11px] text-foreground leading-tight">{attr.name}</p>
@@ -1215,5 +1175,35 @@ export default function Dashboard() {
         </DialogContent>
       </Dialog>
     </Layout>
+  );
+}
+
+function DashboardWishlistButton({ item, itemType }: { item: any; itemType: string }) {
+  const isSaved = useIsWishlisted(item.id, itemType);
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleWishlist({
+      id: item.id,
+      title: item.name,
+      itemType: itemType,
+      imageUrl: item.image
+    });
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110"
+      style={{ background: "rgba(0,0,0,0.55)" }}
+    >
+      <Bookmark
+        className="w-3 h-3"
+        style={{
+          color: isSaved ? "#C9A227" : "#FFFFFF",
+          fill: isSaved ? "#C9A227" : "none"
+        }}
+      />
+    </button>
   );
 }

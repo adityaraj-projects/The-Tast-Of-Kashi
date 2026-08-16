@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout";
 import { motion } from "framer-motion";
 import { Star, Heart, Bookmark, Search, SlidersHorizontal, Flame } from "lucide-react";
 import { openHistory } from "@/components/HistoryDialog";
-import { toggleWishlist, isWishlistItem, useGetFoods } from "@/hooks/api-hooks";
+import { toggleWishlist, useIsWishlisted, useGetFoods } from "@/hooks/api-hooks";
 
 const CATEGORIES = ["All", "Street Food", "Sweets", "Beverages", "Breakfast", "Desserts", "Specialty", "Winter Special"];
 
@@ -130,27 +130,7 @@ export default function Foods() {
                       <div className="w-2 h-2 rounded-full bg-green-500" />
                     </div>
                     {/* Bookmark */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist({
-                          id: food.id,
-                          title: food.name,
-                          itemType: "Food",
-                          imageUrl: food.image
-                        });
-                      }}
-                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-90" 
-                      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
-                    >
-                      <Bookmark 
-                        className="w-3.5 h-3.5" 
-                        style={{ 
-                          color: isWishlistItem(food.id, "Food") ? "#C9A227" : "#FFFFFF",
-                          fill: isWishlistItem(food.id, "Food") ? "#C9A227" : "none"
-                        }} 
-                      />
-                    </button>
+                    <FoodWishlistButton food={food} variant="bookmark" />
                     {/* Category */}
                     <div className="absolute bottom-2.5 left-2.5">
                       <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: "rgba(201,162,39,0.20)", color: "#C9A227", border: "1px solid rgba(201,162,39,0.25)" }}>{food.category}</span>
@@ -174,27 +154,7 @@ export default function Foods() {
                       }`}>
                         {food.spice === "None" ? "Not Spicy" : food.spice}
                       </span>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist({
-                            id: `food_${food.name}`,
-                            title: food.name,
-                            itemType: "Food",
-                            imageUrl: food.image
-                          });
-                        }}
-                        className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-all" 
-                        style={{ background: "rgba(201,162,39,0.08)", border: "1px solid rgba(201,162,39,0.15)" }}
-                      >
-                        <Heart 
-                          className="w-3.5 h-3.5 transition-all" 
-                          style={{ 
-                            color: isWishlistItem(food.name) ? "#EF4444" : "#C9A227",
-                            fill: isWishlistItem(food.name) ? "#EF4444" : "none"
-                          }} 
-                        />
-                      </button>
+                      <FoodWishlistButton food={food} variant="heart" />
                     </div>
                   </div>
                 </motion.div>
@@ -204,5 +164,53 @@ export default function Foods() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+function FoodWishlistButton({ food, variant }: { food: any; variant: "bookmark" | "heart" }) {
+  const isSaved = useIsWishlisted(food.id, "Food");
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleWishlist({
+      id: food.id,
+      title: food.name,
+      itemType: "Food",
+      imageUrl: food.image
+    });
+  };
+
+  if (variant === "bookmark") {
+    return (
+      <button 
+        onClick={handleToggle}
+        className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-90" 
+        style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+      >
+        <Bookmark 
+          className="w-3.5 h-3.5" 
+          style={{ 
+            color: isSaved ? "#C9A227" : "#FFFFFF",
+            fill: isSaved ? "#C9A227" : "none"
+          }} 
+        />
+      </button>
+    );
+  }
+
+  return (
+    <button 
+      onClick={handleToggle}
+      className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-all" 
+      style={{ background: "rgba(201,162,39,0.08)", border: "1px solid rgba(201,162,39,0.15)" }}
+    >
+      <Heart 
+        className="w-3.5 h-3.5 transition-all" 
+        style={{ 
+          color: isSaved ? "#EF4444" : "#C9A227",
+          fill: isSaved ? "#EF4444" : "none"
+        }} 
+      />
+    </button>
   );
 }

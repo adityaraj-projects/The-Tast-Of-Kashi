@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout";
 import { motion } from "framer-motion";
 import { Star, Heart, Bookmark, Search, SlidersHorizontal, Landmark, MapPin, Clock } from "lucide-react";
 import { openHistory } from "@/components/HistoryDialog";
-import { toggleWishlist, isWishlistItem, useGetAttractions } from "@/hooks/api-hooks";
+import { toggleWishlist, useIsWishlisted, useGetAttractions } from "@/hooks/api-hooks";
 
 const TYPES = ["All", "Temple", "Ghat", "Heritage", "Boat"];
 
@@ -141,27 +141,7 @@ export default function Attractions() {
                         }`}>{attr.type}</span>
                       </div>
                       {/* Bookmark */}
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist({
-                            id: attr.id,
-                            title: attr.name,
-                            itemType: attr.type,
-                            imageUrl: attr.image
-                          });
-                        }}
-                        className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center hover:opacity-90 transition-all z-10" 
-                        style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
-                      >
-                        <Bookmark 
-                          className="w-3.5 h-3.5" 
-                          style={{ 
-                            color: isWishlistItem(attr.id, attr.type) ? "#C9A227" : "#FFFFFF",
-                            fill: isWishlistItem(attr.id, attr.type) ? "#C9A227" : "none"
-                          }} 
-                        />
-                      </button>
+                      <AttractionWishlistButton attr={attr} variant="bookmark" />
                       {/* Sub label */}
                       <div className="absolute bottom-3 left-3 flex items-center gap-1 text-[10px] text-[#C9A227]">
                         <MapPin className="w-3 h-3" />
@@ -193,27 +173,7 @@ export default function Attractions() {
                         >
                           Read Legend ▾
                         </button>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleWishlist({
-                              id: `attr_${attr.name}`,
-                              title: attr.name,
-                              itemType: attr.type,
-                              imageUrl: attr.image
-                            });
-                          }}
-                          className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-85 transition-all cursor-pointer" 
-                          style={{ background: "rgba(201,162,39,0.08)", border: "1px solid rgba(201,162,39,0.15)" }}
-                        >
-                          <Heart 
-                            className="w-3.5 h-3.5 transition-all" 
-                            style={{ 
-                              color: isWishlistItem(attr.name) ? "#EF4444" : "#C9A227",
-                              fill: isWishlistItem(attr.name) ? "#EF4444" : "none"
-                            }} 
-                          />
-                        </button>
+                        <AttractionWishlistButton attr={attr} variant="heart" />
                       </div>
                     </div>
                   </motion.div>
@@ -224,5 +184,53 @@ export default function Attractions() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+function AttractionWishlistButton({ attr, variant }: { attr: any; variant: "bookmark" | "heart" }) {
+  const isSaved = useIsWishlisted(attr.id, attr.type);
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleWishlist({
+      id: attr.id,
+      title: attr.name,
+      itemType: attr.type,
+      imageUrl: attr.image
+    });
+  };
+
+  if (variant === "bookmark") {
+    return (
+      <button 
+        onClick={handleToggle}
+        className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center hover:opacity-90 transition-all z-10" 
+        style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+      >
+        <Bookmark 
+          className="w-3.5 h-3.5" 
+          style={{ 
+            color: isSaved ? "#C9A227" : "#FFFFFF",
+            fill: isSaved ? "#C9A227" : "none"
+          }} 
+        />
+      </button>
+    );
+  }
+
+  return (
+    <button 
+      onClick={handleToggle}
+      className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-85 transition-all cursor-pointer" 
+      style={{ background: "rgba(201,162,39,0.08)", border: "1px solid rgba(201,162,39,0.15)" }}
+    >
+      <Heart 
+        className="w-3.5 h-3.5 transition-all" 
+        style={{ 
+          color: isSaved ? "#EF4444" : "#C9A227",
+          fill: isSaved ? "#EF4444" : "none"
+        }} 
+      />
+    </button>
   );
 }
