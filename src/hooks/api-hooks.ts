@@ -288,23 +288,23 @@ export function useGetFoods() {
     queryFn: async () => {
       const { data: dbFoods, error: dbError } = await supabase
         .from("foods")
-        .select("id, name, tagline, image_url, rating, price, category, is_veg, spice");
+        .select("id, title, description, image_url");
       if (dbError) throw dbError;
       if (dbFoods && dbFoods.length > 0) {
-        const hasInvalid = dbFoods.some((f: any) => !STORIES_DATA[f.name] || f.name.toLowerCase().includes("chicken") || f.name.toLowerCase().includes("tikka") || f.name.toLowerCase().includes("patty") || f.name.toLowerCase().includes("basmati"));
+        const hasInvalid = dbFoods.some((f: any) => !f.title || !STORIES_DATA[f.title] || f.title.toLowerCase().includes("chicken") || f.title.toLowerCase().includes("tikka") || f.title.toLowerCase().includes("patty") || f.title.toLowerCase().includes("basmati"));
         if (hasInvalid) {
           return FOODS_FALLBACK.map((f, i) => ({ id: `fallback_food_${i + 1}`, ...f }));
         } else {
           return dbFoods.map((f: any) => ({
             id: String(f.id),
-            name: f.name || "",
-            tagline: f.tagline || f.description || "",
-            image: f.image_url || f.imageUrl || "/images/logo.png",
-            rating: Number(f.rating || 4.7),
-            price: Number(f.price || 40),
-            category: f.category || "Street Food",
-            isVeg: f.is_veg !== false,
-            spice: f.spice || "Medium"
+            name: f.title || "",
+            tagline: f.description || "",
+            image: f.image_url || "/images/logo.png",
+            rating: 4.7,
+            price: 40,
+            category: "Street Food",
+            isVeg: true,
+            spice: "Medium"
           }));
         }
       }
@@ -321,22 +321,22 @@ export function useGetAttractions() {
     queryFn: async () => {
       const { data: dbAttractions, error: dbError } = await supabase
         .from("attractions")
-        .select("id, name, description, image_url, rating, type, timing, location");
+        .select("id, title, description, image_url");
       if (dbError) throw dbError;
       if (dbAttractions && dbAttractions.length > 0) {
-        const hasInvalid = dbAttractions.some((a: any) => !STORIES_DATA[a.name] || a.name.toLowerCase().includes("lucknow") || a.name.toLowerCase().includes("stroll") || a.name.toLowerCase().includes("jaipur"));
+        const hasInvalid = dbAttractions.some((a: any) => !a.title || !STORIES_DATA[a.title] || a.title.toLowerCase().includes("lucknow") || a.title.toLowerCase().includes("stroll") || a.title.toLowerCase().includes("jaipur"));
         if (hasInvalid) {
           return ATTRACTIONS_FALLBACK.map((a, i) => ({ id: `fallback_attr_${i + 1}`, ...a }));
         } else {
           return dbAttractions.map((a: any) => ({
             id: String(a.id),
-            name: a.name || "",
-            sub: a.description || a.sub || "",
-            image: a.image_url || a.image || "/images/logo.png",
-            rating: Number(a.rating || 4.8),
-            type: a.type || "Ghat",
-            timing: a.timing || "Open All Day",
-            location: a.location || "Varanasi"
+            name: a.title || "",
+            sub: a.description || "",
+            image: a.image_url || "/images/logo.png",
+            rating: 4.8,
+            type: "Ghat",
+            timing: "Open All Day",
+            location: "Varanasi"
           }));
         }
       }
