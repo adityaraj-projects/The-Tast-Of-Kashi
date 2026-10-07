@@ -7,7 +7,7 @@ import { Link } from "wouter";
 import { openHistory } from "@/lib/events";
 
 export function VendorScroll() {
-  const { data: vendors, isLoading } = useGetVendors({ limit: 6 });
+  const { data: vendors, isLoading } = useGetVendors({ limit: 7 });
 
   if (isLoading) {
     return (
