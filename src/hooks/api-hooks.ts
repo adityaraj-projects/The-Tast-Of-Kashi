@@ -610,8 +610,8 @@ export function useGetWishlist() {
               id,
               food_id,
               attraction_id,
-              foods (id, name, image_url, category),
-              attractions (id, name, image_url, type)
+              foods (id, title, image_url),
+              attractions (id, title, image_url)
             `)
             .eq("user_id", profile.id);
 
@@ -620,15 +620,15 @@ export function useGetWishlist() {
               if (f.foods) {
                 return {
                   id: `food_${f.foods.id}`,
-                  title: f.foods.name,
+                  title: f.foods.title,
                   itemType: "Food",
                   imageUrl: f.foods.image_url || "/images/logo.png"
                 };
               } else if (f.attractions) {
                 return {
                   id: `attr_${f.attractions.id}`,
-                  title: f.attractions.name,
-                  itemType: f.attractions.type || "Attraction",
+                  title: f.attractions.title,
+                  itemType: "Attraction",
                   imageUrl: f.attractions.image_url || "/images/logo.png"
                 };
               }
@@ -642,7 +642,7 @@ export function useGetWishlist() {
             .select(`
               id,
               vendor_id,
-              vendors (id, name, image_url, specialty)
+              vendors (id, name, image_url, description)
             `)
             .eq("user_id", profile.id);
 
@@ -661,10 +661,12 @@ export function useGetWishlist() {
           }
 
           const combined = [...dbFavorites, ...dbWishlists];
-          setItems(combined);
-          localStorage.setItem("kashi_wishlist", JSON.stringify(combined));
-          setIsLoading(false);
-          return;
+          if (combined.length > 0) {
+            setItems(combined);
+            localStorage.setItem("kashi_wishlist", JSON.stringify(combined));
+            setIsLoading(false);
+            return;
+          }
         }
       }
     } catch (err) {
@@ -673,8 +675,19 @@ export function useGetWishlist() {
 
     try {
       const stored = localStorage.getItem("kashi_wishlist");
-      if (stored) setItems(JSON.parse(stored));
-    } catch {}
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setItems(parsed);
+          setIsLoading(false);
+          return;
+        }
+      }
+      setItems(mockWishlist);
+      localStorage.setItem("kashi_wishlist", JSON.stringify(mockWishlist));
+    } catch {
+      setItems(mockWishlist);
+    }
     setIsLoading(false);
   }, []);
 
@@ -764,7 +777,7 @@ export async function toggleWishlist(item: { id: string; title: string; itemType
         const { data: food } = await supabase
           .from("foods")
           .select("id")
-          .eq("name", item.title)
+          .eq("title", item.title)
           .single();
         
         if (food?.id) {
@@ -826,7 +839,7 @@ export async function toggleWishlist(item: { id: string; title: string; itemType
         const { data: attr } = await supabase
           .from("attractions")
           .select("id")
-          .eq("name", item.title)
+          .eq("title", item.title)
           .single();
         
         if (attr?.id) {
