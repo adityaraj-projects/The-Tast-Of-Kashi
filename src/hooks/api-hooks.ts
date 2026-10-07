@@ -120,18 +120,30 @@ export function useGetVendors(params?: { limit?: number }) {
         const { data: dbData, error: dbError } = await query;
         if (dbError) throw dbError;
         if (dbData && dbData.length > 0) {
-          const hasInvalid = dbData.some(v => !v.name || v.name.toLowerCase().includes("generic") || v.name.toLowerCase().includes("mock"));
+          const hasInvalid = dbData.some(v => 
+            !v.name || 
+            v.name.toLowerCase().includes("generic") || 
+            v.name.toLowerCase().includes("mock") || 
+            v.name.toLowerCase().includes("lakhnavi") ||
+            v.name.toLowerCase().includes("pink city") ||
+            (v.image_url && v.image_url.includes("vendor-images"))
+          );
           if (hasInvalid) {
             setData(params?.limit ? mockVendors.slice(0, params.limit) : mockVendors);
           } else {
             const mapped = dbData.map(v => ({
               id: String(v.id),
               name: v.name || v.fullName || "",
-              specialty: v.specialty || "",
-              location: v.location || "",
-              rating: Number(v.rating || 4.7),
-              imageUrl: v.image_url || v.imageUrl || "/images/logo.png",
-              isVerified: !!v.is_verified || !!v.isVerified,
+              nameHindi: (v as any).name_hindi || (v as any).nameHindi || "",
+              category: (v as any).category || "Chaat & Street Food",
+              specialty: v.specialty || (v as any).description || "",
+              location: v.location || "Varanasi",
+              rating: Number(v.rating || 4.8),
+              reviewsCount: (v as any).reviews_count || (v as any).reviewsCount || "1k+",
+              priceRange: (v as any).price_range || (v as any).priceRange || "₹50 - ₹200",
+              timing: (v as any).timing || (v as any).timings || "10:00 AM - 10:00 PM",
+              imageUrl: v.image_url || (v as any).imageUrl || "/images/logo.png",
+              isVerified: !!(v as any).is_verified || !!(v as any).isVerified || !!(v as any).verified,
             }));
             setData(mapped);
           }

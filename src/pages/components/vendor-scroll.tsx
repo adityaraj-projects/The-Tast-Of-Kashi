@@ -3,9 +3,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { Star, MapPin, BadgeCheck } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Link } from "wouter";
+import { openHistory } from "@/lib/events";
 
 export function VendorScroll() {
-  const { data: vendors, isLoading } = useGetVendors({ limit: 5 });
+  const { data: vendors, isLoading } = useGetVendors({ limit: 6 });
 
   if (isLoading) {
     return (
@@ -27,9 +29,11 @@ export function VendorScroll() {
       <div className="flex items-end justify-between">
         <div>
           <h2 className="font-serif text-2xl font-bold text-foreground">Top Local Vendors</h2>
-          <p className="text-muted-foreground text-sm mt-1">The masters of Kashi's flavors</p>
+          <p className="text-muted-foreground text-sm mt-1">The masters of Kashi's flavors & craft</p>
         </div>
-        <button className="text-sm text-primary hover:text-primary/80 font-medium">View All</button>
+        <Link href="/vendors" className="text-sm text-primary hover:text-primary/80 font-medium">
+          View All
+        </Link>
       </div>
 
       <ScrollArea className="w-full whitespace-nowrap pb-4">
@@ -40,6 +44,7 @@ export function VendorScroll() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
+              onClick={() => openHistory(vendor.name)}
               className="w-[320px] bg-card border border-border p-4 rounded-2xl flex gap-4 cursor-pointer hover:border-primary/40 transition-colors group"
             >
               <div className="w-20 h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">

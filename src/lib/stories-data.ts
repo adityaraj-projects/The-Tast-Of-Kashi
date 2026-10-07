@@ -7,7 +7,7 @@ export interface HistoryStory {
   hindi: string;
   
   // Premium details attributes
-  type?: "Temple" | "Ghat" | "Food" | "Boat" | "Heritage";
+  type?: "Temple" | "Ghat" | "Food" | "Boat" | "Heritage" | "Vendor" | "Shop";
   architecture?: string;
   timings?: string;
   bestTimeEn?: string;
@@ -16,6 +16,8 @@ export interface HistoryStory {
   prasadInfo?: string;
   nearbySpots?: string[];
   ingredients?: string[];
+  famousItems?: string[];
+  location?: string;
   spiceLevel?: number; // 1 to 5
   sweetnessLevel?: number; // 1 to 5
   vegOption?: string;
@@ -399,5 +401,194 @@ export const STORIES_DATA: Record<string, HistoryStory> = {
     calories: "220 kcal per cup",
     priceRange: "₹40 - ₹80",
     popularityData: [75, 80, 85, 90, 80, 80]
+  },
+  "Deena Chat Bhandar": {
+    title: "Deena Chat Bhandar",
+    subtitleEn: "Pioneer of Banarasi Tamatar Chaat & Desi Ghee Delicacies",
+    subtitleHi: "बनारसी टमाटर चाट और देशी घी के जायके का विश्वप्रसिद्ध ठिकाना",
+    image: "/images/vendors/deena-chat-bhandar.jpg",
+    english: "Founded in the heart of Varanasi near Dashashwamedh and Luxa Road, Deena Chat Bhandar is celebrated across India as the pioneer and undisputed home of authentic Banarasi Tamatar Chaat. Prepared on massive cast-iron tawas, ripe local tomatoes are slow-roasted with crushed cashews, dried green peas, makhana, ginger, fragrant hing, and roasted spice blends. Bathed in sweet cumin-sugar syrup (jeera-chashni), desi ghee, crunchy namakpare, and freshly chopped coriander, it is served piping hot in earthenware terracotta kulhads. Their melt-in-mouth Dahi Vada, crispy Palak Patta Chaat, Aloo Tikki, and Gulab Jamun attract food lovers, pilgrims, and celebrities every single evening.",
+    hindi: "दशाश्वमेध और लक्सा मार्ग के पास स्थित 'दीना चाट भण्डार' पूरे भारत में बनारसी चाट की शान माना जाता है। यह दुकान बनारस की विश्वप्रसिद्ध 'टमाटर चाट' की जन्मस्थली के रूप में जानी जाती है। लोहे के विशाल तवे पर देसी टमाटरों, भुने मसालों, काजू-मखाने और हींग को भूनकर तैयार की गई चाट पर जीरे की मीठी चाशनी, देसी घी और कुरकुरे नमकपारे डालकर मिट्टी के कुल्हड़ में परोसा जाता है। यहाँ का मुलायम दही वड़ा, पालक पत्ता चाट और टिक्की चाट भी बनारस के स्ट्रीट फूड का सबसे अनूठा अनुभव कराते हैं।",
+    type: "Vendor",
+    timings: "02:00 PM - 10:30 PM",
+    bestTimeEn: "Evening (05:00 PM – 07:30 PM) for fresh hot tawa batches.",
+    location: "Dashashwamedh Road / Luxa Road, Varanasi",
+    famousItems: ["Tamatar Chaat", "Dahi Vada", "Palak Patta Chaat", "Tikki Chaat", "Kachori Chaat", "Gulab Jamun"],
+    priceRange: "₹40 - ₹120 per dish",
+    vegOption: "100% Pure Vegetarian & Desi Ghee",
+    photoRules: "Photography and vlogging warmly welcomed.",
+    nearbySpots: ["Dashashwamedh Ghat", "Kashi Vishwanath Temple", "Godowlia Market"]
+  },
+  "Deena Chaat Bhandar": {
+    title: "Deena Chat Bhandar",
+    subtitleEn: "Pioneer of Banarasi Tamatar Chaat & Desi Ghee Delicacies",
+    subtitleHi: "बनारसी टमाटर चाट और देशी घी के जायके का विश्वप्रसिद्ध ठिकाना",
+    image: "/images/vendors/deena-chat-bhandar.jpg",
+    english: "Founded in the heart of Varanasi near Dashashwamedh and Luxa Road, Deena Chat Bhandar is celebrated across India as the pioneer and undisputed home of authentic Banarasi Tamatar Chaat. Prepared on massive cast-iron tawas, ripe local tomatoes are slow-roasted with crushed cashews, dried green peas, makhana, ginger, fragrant hing, and roasted spice blends. Bathed in sweet cumin-sugar syrup (jeera-chashni), desi ghee, crunchy namakpare, and freshly chopped coriander, it is served piping hot in earthenware terracotta kulhads. Their melt-in-mouth Dahi Vada, crispy Palak Patta Chaat, Aloo Tikki, and Gulab Jamun attract food lovers, pilgrims, and celebrities every single evening.",
+    hindi: "दशाश्वमेध और लक्सा मार्ग के पास स्थित 'दीना चाट भण्डार' पूरे भारत में बनारसी चाट की शान माना जाता है। यह दुकान बनारस की विश्वप्रसिद्ध 'टमाटर चाट' की जन्मस्थली के रूप में जानी जाती है। लोहे के विशाल तवे पर देसी टमाटरों, भुने मसालों, काजू-मखाने और हींग को भूनकर तैयार की गई चाट पर जीरे की मीठी चाशनी, देसी घी और कुरकुरे नमकपारे डालकर मिट्टी के कुल्हड़ में परोसा जाता है। यहाँ का मुलायम दही वड़ा, पालक पत्ता चाट और टिक्की चाट भी बनारस के स्ट्रीट फूड का सबसे अनूठा अनुभव कराते हैं।",
+    type: "Vendor",
+    timings: "02:00 PM - 10:30 PM",
+    bestTimeEn: "Evening (05:00 PM – 07:30 PM) for fresh hot tawa batches.",
+    location: "Dashashwamedh Road / Luxa Road, Varanasi",
+    famousItems: ["Tamatar Chaat", "Dahi Vada", "Palak Patta Chaat", "Tikki Chaat", "Kachori Chaat", "Gulab Jamun"],
+    priceRange: "₹40 - ₹120 per dish",
+    vegOption: "100% Pure Vegetarian & Desi Ghee",
+    photoRules: "Photography and vlogging warmly welcomed.",
+    nearbySpots: ["Dashashwamedh Ghat", "Kashi Vishwanath Temple", "Godowlia Market"]
+  },
+  "Ksheer Sagar": {
+    title: "Ksheer Sagar",
+    subtitleEn: "Royal Temple of Traditional Banarasi Sweets & Dairy Crafts",
+    subtitleHi: "पारंपरिक बनारसी मिष्ठान्न, लाल पेड़ा एवं नमकीन का शाही संस्थान",
+    image: "/images/vendors/ksheer-sagar.jpg",
+    english: "Named after the mythical cosmic ocean of milk in Hindu cosmology, Ksheer Sagar is one of Varanasi's most distinguished sweet institutions. Dedicated to preserving ancient Purvanchali dairy confectionery arts, Ksheer Sagar uses exclusively pure whole cow milk, saffron, and premium dry fruits. Their signature Banarasi Lal Peda is slow-roasted over low flames until the mawa turns a deep mahogany with an unforgettable caramelized aroma. In winter, they prepare divine Malaiyyo—a delicate cloud of milk foam kissed by morning dew and saffron. From festive Kheer Kadam, Chena Toast, and Rasmalai to crisp savory namkeens, it is the royal destination for gifts and temple offerings.",
+    hindi: "क्षीरसागर (क्षीर का दिव्य महासागर) के नाम पर स्थापित यह प्रतिष्ठित संस्थान काशी की मिष्ठान्न कला का गौरव है। शुद्ध गाय के दूध, केसर और मेवों से तैयार होने वाली मिठाइयों के लिए विख्यात क्षीर सागर का 'बनारसी लाल पेड़ा' अपनी अनूठी सौंधी खुशबू और कैरामेलाइज्ड स्वाद के लिए देश-विदेश में प्रसिद्ध है। सर्दियों में यहाँ मिलने वाला ओस-निर्मित 'मलइयो', छेना टोस्ट, खीर कदम, मलाई चाप और ताज़ी नमकीन काशीवासियों और पर्यटकों की पहली पसंद हैं।",
+    type: "Vendor",
+    timings: "07:00 AM - 11:00 PM",
+    bestTimeEn: "Morning (08:00 AM – 11:00 AM) for warm sweets & seasonal Malaiyyo.",
+    location: "Godowlia / Sigra / Lanka, Varanasi",
+    famousItems: ["Banarasi Lal Peda", "Malaiyyo (Winter)", "Kheer Kadam", "Chena Toast", "Rasmalai", "Khasta Samosa & Namkeen"],
+    priceRange: "₹60 - ₹450",
+    vegOption: "100% Pure Vegetarian & Pure Desi Ghee",
+    photoRules: "Photography allowed in retail showrooms.",
+    nearbySpots: ["Godowlia Crossing", "Kashi Vishwanath Temple", "Assi Ghat"]
+  },
+  "Vandana Silks": {
+    title: "Vandana Silks",
+    subtitleEn: "Grand Palace of Heritage Banarasi Silk & Handloom Bridal Sarees",
+    subtitleHi: "विरासत हथकरघा बनारसी सिल्क एवं ब्राइडल साड़ियों का भव्य शो-रूम",
+    image: "/images/vendors/vandana-silks.jpg",
+    english: "Standing majestically in the heritage market of Varanasi, Vandana Silks is an illustrious temple of Banarasi handloom artistry and bridal magnificence. For centuries, Kashi's master weavers have woven fine mulberry silk with real gold and silver Zari threads to create generational heirlooms. Vandana Silks showcases an extraordinary collection of authentic hand-woven Katan Silks, Organza, Tanchoi brocades, and bridal Jangla sarees adorned with intricate Mughal and Vedic floral jaal motifs. Trusted by brides worldwide, every saree here represents the pinnacle of ancient Varanasi craftsmanship and timeless elegance.",
+    hindi: "वाराणसी के ऐतिहासिक चौक व गोदौलिया बाजार में स्थित 'वंदना सिल्क्स' बनारसी हथकरघा सिल्क और भारतीय परिधानों की सबसे भव्य और विश्वसनीय मंजिल है। शुद्ध शहतूत रेशम और सोने-चांदी की असली ज़री से सदियों पुरानी परंपरा के साथ बुनी जाने वाली कातान सिल्क, तंचोई, शिफॉन और जंगला साड़ियों का यहाँ अद्भुत संग्रह है। यहाँ की हर साड़ी काशी के बुनकरों की महीनों की लगन, पारंपरिक पुष्प जाल और शाही नक्काशी का जीवंत प्रमाण है।",
+    type: "Vendor",
+    timings: "10:30 AM - 09:30 PM",
+    bestTimeEn: "Afternoon (01:00 PM – 05:00 PM) for comfortable bridal drape trials.",
+    location: "Chowk / Godowlia Heritage Market, Varanasi",
+    famousItems: ["Pure Katan Silk Sarees", "Bridal Jangla Sarees", "Tanchoi Silk Brocade", "Banarasi Dupattas", "Handloom Lehengas"],
+    priceRange: "₹2,500 - ₹85,000+",
+    vegOption: "Authentic Silk Mark & Handloom Mark Certified",
+    photoRules: "Photography permitted; personal bridal consultations available.",
+    nearbySpots: ["Chowk Market", "Gyanvapi & Kashi Corridor", "Dashashwamedh Ghat"]
+  },
+  "Baati Chokha": {
+    title: "Baati Chokha",
+    subtitleEn: "Rustic Village Oasis & Empowering Rural Women's Cuisine",
+    subtitleHi: "बेटियों का बाटी चोखा - पारंपरिक ग्रामीण स्वाद व संस्कृति का अनूठा संगम",
+    image: "/images/vendors/baati-chokha.jpg",
+    english: "Betiyon Ka Baati Chokha ('Proud of Our Daughters') is a heartwarming culinary sanctuary in Varanasi that blends authentic Purvanchal village cuisine with female empowerment. Housed inside a sprawling rustic courtyard designed with mud-plastered walls, tribal folk murals, lanterns, and wooden charpais, the restaurant celebrates rural warmth. Whole-wheat baatis stuffed with spiced sattu (roasted gram flour) are baked traditionally over slow cow-dung cake embers, broken open by hand, and generously drenched in pure golden desi ghee. Accompanied by wood-smoked roasted eggplant and tomato chokha, garlic chutney, panchmel dal, and jaggery kheer in clay pottery, dining here is an unforgettable journey into ancient Indian hospitality.",
+    hindi: "'बेटियों का बाटी चोखा' बनारस की माटी का गौरव और नारी सशक्तिकरण का जीवंत प्रतीक है। 'ये रेस्टोरेंट है, सोच सा अनोखा' के सिद्धांत पर आधारित यह प्रतिष्ठान बेटियों के सम्मान और ग्रामीण संस्कृति को समर्पित है। मिट्टी से लीपी दीवारों, लालटेन और खपरैल की छतों से सजा इसका देहाती प्रांगण गाँव की याद दिलाता है। यहाँ उपलों की धीमी आंच पर सेकी गई सत्तू भरी बाटी बनाई जाती है, जिसे गरमा-गरम शुद्ध देशी घी में डुबोकर परोसा जाता है। स्मोकी बैंगन-टमाटर का चोखा, तीखी सिलबट्टे वाली चटनी, अरहर की दाल और कुल्हड़ वाली गुड़ की खीर हर आगंतुक को शुद्ध पारंपरिक स्वाद का अनुभव कराती है।",
+    type: "Vendor",
+    timings: "12:00 PM - 11:00 PM",
+    bestTimeEn: "Dinner (07:30 PM – 10:00 PM) for the glowing lantern courtyard ambience.",
+    location: "Anand Mandir Cinema Lane, Teliyabag, Varanasi",
+    famousItems: ["Desi Ghee Baati Chokha Thali", "Sattu Paratha", "Smoked Baingan-Tamatar Chokha", "Jaggery Kheer", "Dal Tadka"],
+    priceRange: "₹150 - ₹450 per person",
+    vegOption: "100% Pure Vegetarian, Cooked in Pure Desi Ghee",
+    photoRules: "Photography and family portraits warmly welcomed.",
+    nearbySpots: ["Varanasi Junction", "Bharat Mata Mandir", "Sarnath Highway"]
+  },
+  "Betiyon Ka Baati Chokha": {
+    title: "Baati Chokha",
+    subtitleEn: "Rustic Village Oasis & Empowering Rural Women's Cuisine",
+    subtitleHi: "बेटियों का बाटी चोखा - पारंपरिक ग्रामीण स्वाद व संस्कृति का अनूठा संगम",
+    image: "/images/vendors/baati-chokha.jpg",
+    english: "Betiyon Ka Baati Chokha ('Proud of Our Daughters') is a heartwarming culinary sanctuary in Varanasi that blends authentic Purvanchal village cuisine with female empowerment. Housed inside a sprawling rustic courtyard designed with mud-plastered walls, tribal folk murals, lanterns, and wooden charpais, the restaurant celebrates rural warmth. Whole-wheat baatis stuffed with spiced sattu (roasted gram flour) are baked traditionally over slow cow-dung cake embers, broken open by hand, and generously drenched in pure golden desi ghee. Accompanied by wood-smoked roasted eggplant and tomato chokha, garlic chutney, panchmel dal, and jaggery kheer in clay pottery, dining here is an unforgettable journey into ancient Indian hospitality.",
+    hindi: "'बेटियों का बाटी चोखा' बनारस की माटी का गौरव और नारी सशक्तिकरण का जीवंत प्रतीक है। 'ये रेस्टोरेंट है, सोच सा अनोखा' के सिद्धांत पर आधारित यह प्रतिष्ठान बेटियों के सम्मान और ग्रामीण संस्कृति को समर्पित है। मिट्टी से लीपी दीवारों, लालटेन और खपरैल की छतों से सजा इसका देहाती प्रांगण गाँव की याद दिलाता है। यहाँ उपलों की धीमी आंच पर सेकी गई सत्तू भरी बाटी बनाई जाती है, जिसे गरमा-गरम शुद्ध देशी घी में डुबोकर परोसा जाता है। स्मोकी बैंगन-टमाटर का चोखा, तीखी सिलबट्टे वाली चटनी, अरहर की दाल और कुल्हड़ वाली गुड़ की खीर हर आगंतुक को शुद्ध पारंपरिक स्वाद का अनुभव कराती है।",
+    type: "Vendor",
+    timings: "12:00 PM - 11:00 PM",
+    bestTimeEn: "Dinner (07:30 PM – 10:00 PM) for the glowing lantern courtyard ambience.",
+    location: "Anand Mandir Cinema Lane, Teliyabag, Varanasi",
+    famousItems: ["Desi Ghee Baati Chokha Thali", "Sattu Paratha", "Smoked Baingan-Tamatar Chokha", "Jaggery Kheer", "Dal Tadka"],
+    priceRange: "₹150 - ₹450 per person",
+    vegOption: "100% Pure Vegetarian, Cooked in Pure Desi Ghee",
+    photoRules: "Photography and family portraits warmly welcomed.",
+    nearbySpots: ["Varanasi Junction", "Bharat Mata Mandir", "Sarnath Highway"]
+  },
+  "Blue Lassi Shop": {
+    title: "Blue Lassi Shop",
+    subtitleEn: "Artisanal Hand-Churned Fruit Lassis Since 1925",
+    subtitleHi: "1925 से स्थापित, विश्वप्रसिद्ध कुल्हड़ फ्रूट लस्सी की ऐतिहासिक दुकान",
+    image: "/images/vendors/blue-lassi-shop.jpg",
+    english: "Tucked inside the ancient cobblestone alleyways leading to Manikarnika Ghat, Blue Lassi Shop has been hand-crafting Varanasi's thickest, most celebrated lassis since 1925. Its cobalt-blue wooden walls are completely covered with thousands of passport photos, handwritten notes, and love letters left by travelers from more than 100 nations. Unlike mechanized blender drinks, curd here is churned by hand using a heavy wooden madhani in brass vats to achieve a velvety, spoon-thick texture. Blended with fresh seasonal fruits like pomegranate, mango, banana, and blueberry, it is finished with a thick layer of clotted malai, sweet rabri, and crushed nuts in earthenware kulhads.",
+    hindi: "मणिकर्णिका घाट जाने वाली प्राचीन संकरी गलियों में स्थित 'ब्लू लस्सी शॉप' 1925 से बनारस की सबसे मशहूर लस्सी परोस रही है। इस दुकान की नीली दीवारों पर दुनिया भर के पर्यटकों की पासपोर्ट तस्वीरें और यादें चिपकी हैं। यहाँ मथानी से मथे गाढ़े दही में ताज़े फल जैसे अनार, आम, केला और मेवे मिलाए जाते हैं। ऊपर से गाढ़ी मलाई और रबड़ी की परत से सजी यह लस्सी कुल्हड़ में परोसी जाती है, जिसे चम्मच से खाया जाता है।",
+    type: "Vendor",
+    timings: "08:00 AM - 10:30 PM",
+    bestTimeEn: "Afternoon (02:00 PM – 05:00 PM) to escape the heat after visiting the Ghats.",
+    location: "Kunj Gali, near Manikarnika Ghat, Varanasi",
+    famousItems: ["Mixed Fruit Rabdi Lassi", "Mango Malai Lassi", "Banana Pomegranate Lassi", "Special Kashi Kulhad Lassi", "Chocolate Coconut Lassi"],
+    priceRange: "₹80 - ₹200",
+    vegOption: "100% Pure Vegetarian & Fresh Dairy",
+    photoRules: "Photography allowed; you can also paste your photo on their historic wall!",
+    nearbySpots: ["Manikarnika Ghat", "Kashi Vishwanath Temple", "Scindia Ghat"]
+  },
+  "Ram Bhandar": {
+    title: "Ram Bhandar",
+    subtitleEn: "Centuries-Old Morning Kachori & Jalebi Institution",
+    subtitleHi: "चौक की सदियों पुरानी ऐतिहासिक कचौड़ी और जलेबी की दुकान",
+    image: "/images/kachori-sabji.png",
+    english: "Located in the bustling heritage lanes of Thatheri Bazar in Chowk, Ram Bhandar is the quintessential Varanasi morning ritual. Since the British era, generations of locals and travelers have lined up at dawn to savor their freshly fried 'Badi Kachori' (crispy poori stuffed with spiced urad dal) served with piping hot pumpkin-potato spicy curry (aloo-kumhra sabzi) and tangy amchur chutney in leaf donas, concluded with syrupy hot desi ghee jalebis.",
+    hindi: "चौक के ठठेरी बाजार की जीवंत गलियों में स्थित 'राम भण्डार' बनारस के सुबह के नाश्ते की सबसे पुरानी पहचान है। यहाँ सुबह-सुबह मिलने वाली ताज़ा खस्ता बड़ी कचौड़ी, तीखी और चटपटी कद्दू-आलू की सब्ज़ी, और शुद्ध देशी घी की कुरकुरी जलेबी का स्वाद हर किसी को मंत्रमुग्ध कर देता है।",
+    type: "Vendor",
+    timings: "06:30 AM - 11:30 AM",
+    bestTimeEn: "Early morning (07:00 AM - 09:00 AM) before stocks run out.",
+    location: "Chowk, Thatheri Bazar, Varanasi",
+    famousItems: ["Badi Kachori Sabzi", "Chhoti Kachori", "Desi Ghee Jalebi", "Imarti"],
+    priceRange: "₹50 - ₹100",
+    vegOption: "100% Pure Vegetarian, Desi Ghee",
+    photoRules: "Photography allowed.",
+    nearbySpots: ["Kashi Vishwanath Temple", "Gyanvapi", "Chowk Market"]
+  },
+  "Kashi Chat Bhandar": {
+    title: "Kashi Chat Bhandar",
+    subtitleEn: "Godowlia's Iconic Sizzle of Palak Chaat & Tamatar Chaat",
+    subtitleHi: "गोदौलिया का प्रसिद्ध चाट प्रतिष्ठान - पालक पत्ता और टमाटर चाट",
+    image: "/images/tamatar-chaat.png",
+    english: "Standing prominently near the buzzing Godowlia crossing, Kashi Chat Bhandar is one of the most beloved street food landmarks in Uttar Pradesh. Known for their sizzling tawa preparations, visitors flock here for the signature crisp Palak Patta Chaat, bubbling Tamatar Chaat, Gulab Jamun, and aromatic Katori Chaat drizzled with chilled sweet curd and pomegranate pearls.",
+    hindi: "गोदौलिया चौराहे के समीप स्थित 'काशी चाट भण्डार' बनारस के सबसे प्रतिष्ठित चाट स्थलों में से एक है। यहाँ की कुरकुरी पालक पत्ता चाट, कुल्हड़ वाली खट्टी-मीठी टमाटर चाट और दही वड़े का स्वाद बनारस आने वाले हर पर्यटक और स्थानीय निवासी के दिल में बस जाता है।",
+    type: "Vendor",
+    timings: "03:00 PM - 11:00 PM",
+    bestTimeEn: "Evening (05:00 PM - 08:00 PM).",
+    location: "D.37/49, Godowlia Crossing, Varanasi",
+    famousItems: ["Palak Patta Chaat", "Tamatar Chaat", "Dahi Gujiya", "Kulfi Falooda"],
+    priceRange: "₹50 - ₹150",
+    vegOption: "100% Pure Vegetarian",
+    photoRules: "Photography allowed.",
+    nearbySpots: ["Godowlia Crossing", "Dashashwamedh Ghat", "Vishwanath Gali"]
+  },
+  "Raj Bandhu Sweets": {
+    title: "Raj Bandhu Sweets",
+    subtitleEn: "Kashi's Historic 1850s Confectionery & Heritage Mithai",
+    subtitleHi: "1850 से संचालित काशी का ऐतिहासिक राजसी मिष्ठान भण्डार",
+    image: "/images/jalebi-imarti.png",
+    english: "Operating continuously since the mid-19th century near Kachori Gali, Raj Bandhu is celebrated as one of Varanasi's oldest and finest traditional confectioners. Renowned for inventing aristocratic recipes like the Magdal, Kheer Kadam, and Banarasi Lal Peda, their sweets are prepared exclusively with pure khoya and desi ghee using closely guarded ancestral recipes.",
+    hindi: "1850 से कचौड़ी गली के पास सेवारत 'राज बंधु' बनारस के सबसे पुराने और प्रतिष्ठित मिष्ठान प्रतिष्ठानों में से एक है। यहाँ का मगदल, परवल की मिठाई, लाल पेड़ा और खीर कदम शुद्ध खोये व देशी घी से तैयार किए जाते हैं।",
+    type: "Vendor",
+    timings: "07:30 AM - 10:30 PM",
+    bestTimeEn: "Anytime during daytime.",
+    location: "Kachori Gali, Chowk, Varanasi",
+    famousItems: ["Magdal", "Banarasi Lal Peda", "Kheer Kadam", "Malai Roll"],
+    priceRange: "₹60 - ₹350",
+    vegOption: "100% Pure Vegetarian Sweets",
+    photoRules: "Photography permitted.",
+    nearbySpots: ["Kachori Gali", "Kashi Vishwanath Temple", "Manikarnika Ghat"]
+  },
+  "Baba Thandai": {
+    title: "Baba Thandai",
+    subtitleEn: "Spiced Pistachio & Saffron Beverage Tradition at Godowlia",
+    subtitleHi: "गोदौलिया की पारंपरिक बनारसी ठंडाई, मलाई और मेवे का शाही स्वाद",
+    image: "/images/thandai.png",
+    english: "A pilgrimage to Kashi remains incomplete without savoring rich Banarasi Thandai at Baba Thandai near Godowlia. Crushed black pepper, fennel, almonds, melon seeds, and saffron-infused milk are topped with thick clotted malai and rabri in a cool clay kulhad.",
+    hindi: "गोदौलिया के पास 'बाबा ठंडाई' बनारसी ठंडाई की जीवंत परंपरा का केंद्र है। काली मिर्च, सौंफ, बादाम, पिस्ता और केसरिया दूध के मिश्रण के ऊपर गाढ़ी मलाई की परत डालकर मिट्टी के कुल्हड़ में परोसी जाती है।",
+    type: "Vendor",
+    timings: "09:00 AM - 11:30 PM",
+    bestTimeEn: "Afternoon & Post-Aarti evening.",
+    location: "Godowlia Chauraha, Varanasi",
+    famousItems: ["Special Badam Kesar Thandai", "Rabri Thandai", "Lassi Kulhad"],
+    priceRange: "₹45 - ₹120",
+    vegOption: "100% Pure Vegetarian Dairy",
+    photoRules: "Photography allowed.",
+    nearbySpots: ["Godowlia Crossing", "Dashashwamedh Ghat"]
   }
 };
+
+

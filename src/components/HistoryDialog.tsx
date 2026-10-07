@@ -27,19 +27,29 @@ export function HistoryDialog() {
     const handleOpen = (e: Event) => {
       const customEvent = e as CustomEvent<{ name: string }>;
       const name = customEvent.detail?.name;
-      if (name && STORIES_DATA[name]) {
-        const item = STORIES_DATA[name];
-        setStory(item);
-        setActiveLanguage("en");
-        setSubTab("overview");
-        setIsPlaying(false);
-        setSpeed(1.0);
-        setIsOpen(true);
-        
-        // check local storage wishlist
-        const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-        const key = item.type === "Food" ? `food_${item.title}` : `attr_${item.title}`;
-        setIsSaved(wishlist.some((w: any) => w.id === key));
+      if (name) {
+        let item = STORIES_DATA[name];
+        if (!item) {
+          const matchKey = Object.keys(STORIES_DATA).find(
+            (k) => k.toLowerCase() === name.toLowerCase() || (STORIES_DATA[k].title && STORIES_DATA[k].title.toLowerCase() === name.toLowerCase())
+          );
+          if (matchKey) item = STORIES_DATA[matchKey];
+        }
+
+        if (item) {
+          setStory(item);
+          setActiveLanguage("en");
+          setSubTab("overview");
+          setIsPlaying(false);
+          setSpeed(1.0);
+          setIsOpen(true);
+          
+          // check local storage wishlist
+          const wishlist = JSON.parse(localStorage.getItem("kashi_wishlist") || localStorage.getItem("wishlist") || "[]");
+          const isVendor = item.type === "Vendor" || item.type === "Shop";
+          const key = item.type === "Food" ? `food_${item.title}` : isVendor ? `vendor_${item.title}` : `attr_${item.title}`;
+          setIsSaved(wishlist.some((w: any) => w.id === key || w.title === item.title));
+        }
       }
     };
 
@@ -166,31 +176,36 @@ export function HistoryDialog() {
 
   const toggleSaveWishlist = () => {
     if (!story) return;
-    const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-    const key = story.type === "Food" ? `food_${story.title}` : `attr_${story.title}`;
+    const wishlist = JSON.parse(localStorage.getItem("kashi_wishlist") || localStorage.getItem("wishlist") || "[]");
+    const isVendor = story.type === "Vendor" || story.type === "Shop";
+    const key = story.type === "Food" ? `food_${story.title}` : isVendor ? `vendor_${story.title}` : `attr_${story.title}`;
     
     if (isSaved) {
-      const updated = wishlist.filter((item: any) => item.id !== key);
+      const updated = wishlist.filter((item: any) => item.id !== key && item.title !== story.title);
+      localStorage.setItem("kashi_wishlist", JSON.stringify(updated));
       localStorage.setItem("wishlist", JSON.stringify(updated));
       setIsSaved(false);
     } else {
       const newItem = {
         id: key,
         title: story.title,
-        itemType: story.type || "Attraction",
+        itemType: story.type || "Vendor",
         imageUrl: story.image
       };
       wishlist.push(newItem);
+      localStorage.setItem("kashi_wishlist", JSON.stringify(wishlist));
       localStorage.setItem("wishlist", JSON.stringify(wishlist));
       setIsSaved(true);
     }
-    // trigger custom event to reload wishlists instantly if any component is listening
+    // trigger events to update wishlists across the app
+    window.dispatchEvent(new Event("wishlist_changed"));
     window.dispatchEvent(new Event("wishlist_updated"));
   };
 
   if (!story) return null;
 
   const isFoodType = story.type === "Food";
+  const isVendorType = story.type === "Vendor" || story.type === "Shop";
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -243,7 +258,45 @@ export function HistoryDialog() {
               📖 Overview & Audio
             </button>
 
-            {!isFoodType ? (
+            {isVendorType ? (
+              <>
+                <button
+                  onClick={() => setSubTab("specialties")}
+                  className={`text-xs font-bold pb-2 transition-all cursor-pointer ${
+                    subTab === "specialties" ? "text-primary border-b-2 border-primary" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🛍️ Specialties & Menu
+                </button>
+                <button
+                  onClick={() => setSubTab("rules")}
+                  className={`text-xs font-bold pb-2 transition-all cursor-pointer ${
+                    subTab === "rules" ? "text-primary border-b-2 border-primary" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🕒 Timings & Address
+                </button>
+              </>
+            ) : isFoodType ? (
+              <>
+                <button
+                  onClick={() => setSubTab("ingredients")}
+                  className={`text-xs font-bold pb-2 transition-all cursor-pointer ${
+                    subTab === "ingredients" ? "text-primary border-b-2 border-primary" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🌿 Taste & Ingredients
+                </button>
+                <button
+                  onClick={() => setSubTab("vendors")}
+                  className={`text-xs font-bold pb-2 transition-all cursor-pointer ${
+                    subTab === "vendors" ? "text-primary border-b-2 border-primary" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🏪 Where to Buy
+                </button>
+              </>
+            ) : (
               <>
                 <button
                   onClick={() => setSubTab("architecture")}
@@ -268,25 +321,6 @@ export function HistoryDialog() {
                   }`}
                 >
                   🏵️ Worship & Prasad
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => setSubTab("ingredients")}
-                  className={`text-xs font-bold pb-2 transition-all cursor-pointer ${
-                    subTab === "ingredients" ? "text-primary border-b-2 border-primary" : "text-white/60 hover:text-white"
-                  }`}
-                >
-                  🌿 Taste & Ingredients
-                </button>
-                <button
-                  onClick={() => setSubTab("vendors")}
-                  className={`text-xs font-bold pb-2 transition-all cursor-pointer ${
-                    subTab === "vendors" ? "text-primary border-b-2 border-primary" : "text-white/60 hover:text-white"
-                  }`}
-                >
-                  🏪 Where to Buy
                 </button>
               </>
             )}
@@ -366,6 +400,42 @@ export function HistoryDialog() {
               </motion.div>
             )}
 
+            {subTab === "specialties" && (
+              <motion.div
+                key="specialties"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-3.5 bg-muted/25 border border-border rounded-xl">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Price & Budget</span>
+                    <p className="text-base font-bold text-primary mt-0.5">{story.priceRange || "Affordable"}</p>
+                  </div>
+                  <div className="p-3.5 bg-muted/25 border border-border rounded-xl">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Specialty Type</span>
+                    <p className="text-base font-bold text-white mt-0.5">{story.vegOption || "Authentic Banarasi"}</p>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-muted/20 border border-border rounded-2xl text-left">
+                  <span className="text-[10px] uppercase font-bold text-[#C9A227] block mb-3 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> Famous Specialties & Signature Offerings
+                  </span>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {(story.famousItems || story.ingredients || [])?.map((item, idx) => (
+                      <span key={idx} className="text-xs px-3 py-1.5 rounded-xl bg-black/50 border border-[#C9A227]/25 text-white font-medium flex items-center gap-1.5 shadow-sm">
+                        <Star className="w-3 h-3 text-[#C9A227] fill-[#C9A227]" />
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {subTab === "architecture" && (
               <motion.div
                 key="architecture"
@@ -401,16 +471,16 @@ export function HistoryDialog() {
 
                 <div className="p-4 bg-muted/25 border border-border rounded-xl space-y-1">
                   <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                    <ShieldAlert className="w-3.5 h-3.5 text-primary" /> Dress Code
+                    <MapPin className="w-3.5 h-3.5 text-primary" /> {isVendorType ? "Address & Location" : "Dress Code"}
                   </span>
-                  <p className="text-[13px] text-white font-semibold">{story.dressCode || "Modest attire recommended"}</p>
+                  <p className="text-[13px] text-white font-semibold">{isVendorType ? (story.location || "Varanasi") : (story.dressCode || "Modest attire recommended")}</p>
                 </div>
 
                 <div className="p-4 bg-muted/25 border border-border rounded-xl space-y-1 sm:col-span-2">
                   <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                    <Eye className="w-3.5 h-3.5 text-primary" /> Photography & Belongings
+                    <Eye className="w-3.5 h-3.5 text-primary" /> {isVendorType ? "Visiting & Photo Policy" : "Photography & Belongings"}
                   </span>
-                  <p className="text-xs text-white/80 leading-relaxed">{story.photoRules || "Photography is allowed in main public areas. Avoid taking pictures of private rituals."}</p>
+                  <p className="text-xs text-white/80 leading-relaxed">{story.photoRules || "Photography is allowed in main public areas."}</p>
                 </div>
               </motion.div>
             )}
