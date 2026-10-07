@@ -345,6 +345,33 @@ export default function MapExplorerPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Helper to configure Leaflet tile provider (uses CARTO if API key is provided, otherwise falls back to free high-res OpenStreetMap tiles with no watermarks)
+  const getTileLayerConfig = (isLightMode: boolean) => {
+    const cartoApiKey = ((import.meta as any).env?.VITE_CARTO_API_KEY as string | undefined)?.trim();
+    if (cartoApiKey) {
+      return {
+        url: isLightMode
+          ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${cartoApiKey}`
+          : `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoApiKey}`,
+        options: {
+          maxZoom: 19,
+          subdomains: "abcd",
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }
+      };
+    }
+
+    return {
+      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      options: {
+        maxZoom: 19,
+        subdomains: "abc",
+        className: "map-tiles-osm",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }
+    };
+  };
+
   // Initialize Leaflet Map
   useEffect(() => {
     if (leafletStatus !== "ready") return;
@@ -353,9 +380,7 @@ export default function MapExplorerPage() {
     if (!L || !mapRef.current || leafletMap.current) return;
 
     const isLightMode = document.documentElement.classList.contains("light");
-    const tileUrl = isLightMode
-      ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+    const tileConfig = getTileLayerConfig(isLightMode);
 
     try {
       leafletMap.current = L.map(mapRef.current, {
@@ -365,7 +390,7 @@ export default function MapExplorerPage() {
         attributionControl: false
       });
 
-      L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(leafletMap.current);
+      L.tileLayer(tileConfig.url, tileConfig.options).addTo(leafletMap.current);
       markersGroup.current = L.layerGroup().addTo(leafletMap.current);
 
       renderMarkers();
@@ -411,9 +436,7 @@ export default function MapExplorerPage() {
 
     const observer = new MutationObserver(() => {
       const isLightMode = document.documentElement.classList.contains("light");
-      const newTileUrl = isLightMode
-        ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+      const tileConfig = getTileLayerConfig(isLightMode);
 
       leafletMap.current.eachLayer((layer: any) => {
         if (layer instanceof L.TileLayer) {
@@ -421,7 +444,7 @@ export default function MapExplorerPage() {
         }
       });
 
-      L.tileLayer(newTileUrl, { maxZoom: 19 }).addTo(leafletMap.current);
+      L.tileLayer(tileConfig.url, tileConfig.options).addTo(leafletMap.current);
     });
 
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
@@ -656,8 +679,16 @@ export default function MapExplorerPage() {
           margin: 12px 14px !important;
           font-family: 'Inter', sans-serif;
         }
+        /* High-contrast, elegant dark filter for OpenStreetMap tiles when no Carto key is supplied */
+        .map-tiles-osm {
+          filter: brightness(0.65) invert(1) contrast(2.2) hue-rotate(185deg) saturate(0.4) brightness(0.75) !important;
+          transition: filter 0.3s ease;
+        }
+        .light .map-tiles-osm {
+          filter: none !important;
+        }
         .leaflet-tile-container {
-          filter: saturate(1.05) contrast(1.05) brightness(0.9) !important;
+          filter: saturate(1.05) contrast(1.05) brightness(0.9);
         }
         .light .leaflet-tile-container {
           filter: none !important;
